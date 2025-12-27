@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 
+using namespace std;
+
 // Node Structure for Linked Lists, Stacks, Queues
 template <typename T>
 struct Node {
@@ -277,7 +279,7 @@ private:
         return key % capacity;
     }
     
-    int hashFunction(std::string key) {
+    int hashFunction(string key) {
         int hash = 0;
         for (char c : key) {
             hash = (hash * 31 + c) % capacity;

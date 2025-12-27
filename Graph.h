@@ -4,6 +4,9 @@
 #include "structures.h"
 #include <string>
 #include <iostream>
+#include <fstream>
+
+using namespace std;
 
 struct Edge {
     int toIndex;
@@ -17,8 +20,8 @@ struct Edge {
 
 class Graph {
 private:
-    HashMap<std::string, int> cityLookup;
-    CustomVector<std::string> cities;
+    HashMap<string, int> cityLookup;
+    CustomVector<string> cities;
     CustomVector<CustomLinkedList<Edge>> adjList;
     int cityCount;
     
@@ -26,10 +29,13 @@ private:
 
 public:
     Graph();
-    void addLocation(std::string name);
-    void addRoute(std::string from, std::string to, int weight);
-    void blockRoad(std::string from, std::string to);
-    void runDijkstra(std::string startCity, std::string endCity);
+    void addLocation(string name);
+    void addRoute(string from, string to, int weight);
+    void blockRoad(string from, string to);
+    void runDijkstra(string startCity, string endCity);
+    
+    // File I/O
+    void loadGraph(string filename);
 };
 
 #endif // GRAPH_H

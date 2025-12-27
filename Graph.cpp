@@ -2,7 +2,7 @@
 
 Graph::Graph() : cityLookup(100), cityCount(0) {}
 
-void Graph::addLocation(std::string name) {
+void Graph::addLocation(string name) {
     if (cityLookup.contains(name)) return;
     cityLookup.insert(name, cityCount);
     cities.push_back(name);
@@ -14,39 +14,30 @@ void Graph::addLocation(std::string name) {
     cityCount++;
 }
 
-void Graph::addRoute(std::string from, std::string to, int weight) {
+void Graph::addRoute(string from, string to, int weight) {
     if (!cityLookup.contains(from) || !cityLookup.contains(to)) {
-        std::cout << "One or both locations do not exist." << std::endl;
+        cout << "One or both locations do not exist." << endl;
         return;
     }
     
     int u = cityLookup.get(from);
     int v = cityLookup.get(to);
     
-    // Add edge u -> v
     adjList[u].append(Edge(v, weight));
-    // Add edge v -> u (Undirected graph assumed for roads, or typical map)
-    // If directed, remove this line. Prompt says "Roads", usually 2-way but "blockRoad" implies directionality might exist?
-    // Let's assume undirected for simplicity unless specified.
     adjList[v].append(Edge(u, weight));
 }
 
-void Graph::blockRoad(std::string from, std::string to) {
+void Graph::blockRoad(string from, string to) {
     if (!cityLookup.contains(from) || !cityLookup.contains(to)) return;
     
     int u = cityLookup.get(from);
     int v = cityLookup.get(to);
     
-    // Iterate through list of u to find v and update weight to INF or delete
-    // Since Linked List implementation doesn't allow easy arbitrary access/modification without traversal:
-    // We didn't impl 'find' or iterator in CustomLinkedList.
-    // I need to traverse manually.
     Node<Edge>* curr = adjList[u].getHead();
     while (curr) {
         if (curr->data.toIndex == v) {
-            curr->data.weight = INF; // Soft block
-            std::cout << "Road blocked between " << from << " and " << to << std::endl;
-            // Also block v -> u
+            curr->data.weight = INF; 
+            cout << "Road blocked between " << from << " and " << to << endl;
              Node<Edge>* curr2 = adjList[v].getHead();
              while (curr2) {
                  if (curr2->data.toIndex == u) {
@@ -65,17 +56,14 @@ struct DijkstraNode {
     int u;
     int dist;
     
-    // MinHeap needs < operator. We want SMALLER dist to have HIGHER priority (be at root).
-    // MinHeap implementation puts smallest value at root.
-    // So if dist A < dist B, then A < B should be true.
     bool operator<(const DijkstraNode& other) const {
         return dist < other.dist;
     }
 };
 
-void Graph::runDijkstra(std::string startCity, std::string endCity) {
+void Graph::runDijkstra(string startCity, string endCity) {
      if (!cityLookup.contains(startCity) || !cityLookup.contains(endCity)) {
-        std::cout << "Invalid cities." << std::endl;
+        cout << "Invalid cities." << endl;
         return;
     }
     
@@ -84,13 +72,7 @@ void Graph::runDijkstra(std::string startCity, std::string endCity) {
     
     CustomVector<int> dist;
     CustomVector<int> parent;
-    // Resize vectors manually or push_back checks
-    // We don't have 'resize' public. push_back INF for all cities.
-    // Or assume max cities.
-    // Let's just create array pointers since CustomVector is limited?
-    // No, let's use CustomVector.
     
-    // Initialize
     for(int i=0; i<cityCount; i++) {
         dist.push_back(INF);
         parent.push_back(-1);
@@ -107,7 +89,7 @@ void Graph::runDijkstra(std::string startCity, std::string endCity) {
         int d = top.dist;
         
         if (d > dist[u]) continue;
-        if (u == end) break; // Found destination
+        if (u == end) break; 
         
         Node<Edge>* curr = adjList[u].getHead();
         while (curr) {
@@ -124,11 +106,10 @@ void Graph::runDijkstra(std::string startCity, std::string endCity) {
     }
     
     if (dist[end] == INF) {
-        std::cout << "No route found from " << startCity << " to " << endCity << std::endl;
+        cout << "No route found from " << startCity << " to " << endCity << endl;
     } else {
-        std::cout << "Shortest Path Cost: " << dist[end] << std::endl;
-        std::cout << "Path: ";
-        // Reconstruct path
+        cout << "Shortest Path Cost: " << dist[end] << endl;
+        cout << "Path: ";
         CustomStack<int> pathStack;
         int curr = end;
         while (curr != -1) {
@@ -137,9 +118,36 @@ void Graph::runDijkstra(std::string startCity, std::string endCity) {
         }
         
         while (!pathStack.isEmpty()) {
-            std::cout << cities[pathStack.pop()];
-            if (!pathStack.isEmpty()) std::cout << " -> ";
+            cout << cities[pathStack.pop()];
+            if (!pathStack.isEmpty()) cout << " -> ";
         }
-        std::cout << std::endl;
+        cout << endl;
     }
+}
+
+void Graph::loadGraph(string filename) {
+    ifstream inFile(filename);
+    if (!inFile) {
+        // Fallback to default if no file
+        addLocation("A"); addLocation("B"); addLocation("C"); addLocation("D"); addLocation("E");
+        addRoute("A", "B", 10); addRoute("A", "C", 5);
+        addRoute("B", "D", 20); addRoute("C", "B", 8);
+        addRoute("C", "E", 15); addRoute("D", "E", 5);
+        return;
+    }
+    
+    string type;
+    while (inFile >> type) {
+        if (type == "CITY") {
+            string name;
+            inFile >> name;
+            addLocation(name);
+        } else if (type == "ROUTE") {
+            string u, v;
+            int w;
+            inFile >> u >> v >> w;
+            addRoute(u, v, w);
+        }
+    }
+    inFile.close();
 }

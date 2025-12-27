@@ -5,7 +5,7 @@ CourierOperations::CourierOperations() {}
 
 void CourierOperations::addToWarehouse(Parcel p) {
     warehouseQueue.enqueue(p);
-    std::cout << "Parcel " << p.parcelID << " added to warehouse loading queue." << std::endl;
+    cout << "Parcel " << p.parcelID << " added to warehouse loading queue." << endl;
 }
 
 Parcel CourierOperations::loadFromWarehouse() {
@@ -23,11 +23,11 @@ void CourierOperations::logAction(Action act) {
 
 Action CourierOperations::undoLastAction() {
     if (auditLog.isEmpty()) {
-        std::cout << "Nothing to undo." << std::endl;
+        cout << "Nothing to undo." << endl;
         return Action("NONE");
     }
     
     Action last = auditLog.pop();
-    std::cout << "Undoing action: " << last.type << std::endl;
+    cout << "Undoing action: " << last.type << endl;
     return last;
 }

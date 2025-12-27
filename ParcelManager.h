@@ -4,6 +4,9 @@
 #include "structures.h"
 #include "Parcel.h"
 #include <iostream>
+#include <fstream>
+
+using namespace std;
 
 class ParcelManager {
 private:
@@ -17,6 +20,10 @@ public:
     Parcel peekHighPriority();
     Parcel getParcel(int id);
     bool hasParcels();
+    
+    // File Handling
+    void saveParcels(string filename);
+    void loadParcels(string filename);
 };
 
 #endif // PARCEL_MANAGER_H
