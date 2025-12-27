@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <string>
-#include <limits>
 #include "Graph.h"
 
 using namespace std;
@@ -13,7 +12,10 @@ namespace Utils {
     // Clears the input buffer
     void clearInputBuffer() {
         cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        // Manual flush without numeric_limits
+        while (cin.get() != '\n') {
+            continue;
+        }
     }
 
     // Get a validated integer within a range
