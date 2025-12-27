@@ -43,6 +43,28 @@ public:
         if (data) delete[] data;
     }
 
+    // Copy Constructor
+    CustomVector(const CustomVector& other) : capacity(other.capacity), size(other.size) {
+        data = new T[capacity];
+        for (int i = 0; i < size; i++) {
+            data[i] = other.data[i];
+        }
+    }
+
+    // Assignment Operator
+    CustomVector& operator=(const CustomVector& other) {
+        if (this != &other) {
+            delete[] data;
+            capacity = other.capacity;
+            size = other.size;
+            data = new T[capacity];
+            for (int i = 0; i < size; i++) {
+                data[i] = other.data[i];
+            }
+        }
+        return *this;
+    }
+
     void push_back(T val) {
         if (size == capacity) {
             resize(capacity * 2);
@@ -85,12 +107,40 @@ public:
     CustomLinkedList() : head(nullptr), tail(nullptr), size(0) {}
 
     ~CustomLinkedList() {
+        clear();
+    }
+
+    // Copy Constructor
+    CustomLinkedList(const CustomLinkedList& other) : head(nullptr), tail(nullptr), size(0) {
+        Node<T>* curr = other.head;
+        while (curr) {
+            append(curr->data);
+            curr = curr->next;
+        }
+    }
+
+    // Assignment Operator
+    CustomLinkedList& operator=(const CustomLinkedList& other) {
+        if (this != &other) {
+            clear();
+            Node<T>* curr = other.head;
+            while (curr) {
+                append(curr->data);
+                curr = curr->next;
+            }
+        }
+        return *this;
+    }
+
+    void clear() {
         Node<T>* current = head;
         while (current) {
             Node<T>* next = current->next;
             delete current;
             current = next;
         }
+        head = tail = nullptr;
+        size = 0;
     }
 
     void append(T val) {
