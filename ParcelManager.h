@@ -16,6 +16,7 @@ private:
 public:
     ParcelManager();
     void addParcel(Parcel p);
+    void updateParcel(Parcel p); // Updates state in Map (and Heap if needed?)
     void dispatchNext();
     Parcel peekHighPriority();
     Parcel getParcel(int id);

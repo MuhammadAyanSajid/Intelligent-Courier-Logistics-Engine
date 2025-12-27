@@ -69,6 +69,7 @@ int main() {
                     cityMap.runDijkstra("A", p.destination); // Assuming A is warehouse
                     
                     p.updateStatus("In Transit"); 
+                    pm.updateParcel(p); // Sync change to manager
                     ops.logAction(Action("DISPATCH", p.parcelID, "Loaded")); 
                 }
                 break;

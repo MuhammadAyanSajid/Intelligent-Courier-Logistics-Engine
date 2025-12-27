@@ -344,6 +344,18 @@ public:
         }
         return false;
     }
+
+    CustomVector<V> getAllValues() {
+        CustomVector<V> values;
+        for (int i = 0; i < capacity; i++) {
+            HashNode* entry = table[i];
+            while (entry) {
+                values.push_back(entry->value);
+                entry = entry->next;
+            }
+        }
+        return values;
+    }
 };
 
 #endif // STRUCTURES_H
