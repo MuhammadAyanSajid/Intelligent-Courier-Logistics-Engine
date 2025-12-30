@@ -1,11 +1,21 @@
-CITY A
-CITY B
-CITY C
-CITY D
-CITY E
-ROUTE A B 10
-ROUTE A C 5
-ROUTE B D 20
-ROUTE B C 8
-ROUTE C E 15
-ROUTE D E 5
+CITY Karachi
+CITY Lahore
+CITY Islamabad
+CITY Peshawar
+CITY Quetta
+ROUTE Karachi Lahore 10
+ROUTE Karachi Islamabad 5
+ROUTE Lahore Peshawar 20
+ROUTE Lahore Islamabad 8
+ROUTE Islamabad Quetta 15
+ROUTE Peshawar Quetta 5
+ZONE South
+ZONE Central
+ZONE North
+ZONECITY South Karachi
+ZONECITY Central Lahore
+ZONECITY North Islamabad
+ZONECITY North Peshawar
+ZONECITY West Quetta
+ZONE East
+ZONE West

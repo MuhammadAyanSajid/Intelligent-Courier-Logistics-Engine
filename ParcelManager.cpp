@@ -10,14 +10,14 @@ bool ParcelManager::parcelExists(int id)
 void ParcelManager::addParcel(Parcel p)
 {
     // Check for duplicate ID
-    if (parcelMap.contains(p.parcelID))
+    if (parcelMap.contains(p.getParcelID()))
     {
-        cout << "Error: Parcel ID " << p.parcelID << " already exists!" << endl;
+        cout << "Error: Parcel ID " << p.getParcelID() << " already exists!" << endl;
         return;
     }
     priorityQueue.insert(p);
-    parcelMap.insert(p.parcelID, p);
-    cout << "Parcel " << p.parcelID << " added to system (Priority: " << p.priority << ")." << endl;
+    parcelMap.insert(p.getParcelID(), p);
+    cout << "Parcel " << p.getParcelID() << " added to system (Priority: " << p.getPriority() << ")." << endl;
 }
 
 Parcel ParcelManager::dispatchNext()
@@ -29,7 +29,7 @@ Parcel ParcelManager::dispatchNext()
     }
 
     Parcel p = priorityQueue.extractMin();
-    cout << "Dispatching Parcel " << p.parcelID << " to " << p.destination << endl;
+    cout << "Dispatching Parcel " << p.getParcelID() << " to " << p.getDestination() << endl;
     return p; // Return for tracking/undo
 }
 
@@ -42,7 +42,7 @@ void ParcelManager::reinsertParcel(Parcel p)
 {
     // Used for undo - re-add to both heap and map
     priorityQueue.insert(p);
-    parcelMap.insert(p.parcelID, p);
+    parcelMap.insert(p.getParcelID(), p);
 }
 
 Parcel ParcelManager::peekHighPriority()
@@ -63,7 +63,7 @@ bool ParcelManager::hasParcels()
 void ParcelManager::updateParcel(Parcel p)
 {
     // Update the copy in Map so it can be saved/retrieved correctly
-    parcelMap.insert(p.parcelID, p);
+    parcelMap.insert(p.getParcelID(), p);
     // Note: Heap order is based on Priority/Weight. If those changed, heap property might violate.
     // But usually we just update Status. Status doesn't affect Heap order.
     // If Priority changed, we should re-insert to Heap, but that's complex without 'remove'.
@@ -86,11 +86,11 @@ void ParcelManager::saveParcels(string filename)
     {
         Parcel p = all[i];
         // Format: ID|Dest|Weight|Priority|Status (pipe-delimited)
-        outFile << p.parcelID << "|"
-                << p.destination << "|"
-                << p.weight << "|"
-                << p.priority << "|"
-                << p.status << endl;
+        outFile << p.getParcelID() << "|"
+                << p.getDestination() << "|"
+                << p.getWeight() << "|"
+                << p.getPriority() << "|"
+                << p.getStatus() << endl;
     }
 
     outFile.close();
@@ -149,12 +149,12 @@ void ParcelManager::loadParcels(string filename)
         if (fieldNum >= 5 && id > 0)
         {
             Parcel newP(id, dest, w, p);
-            newP.status = status;
+            newP.setStatus(status);
             // Add silently without duplicate messages during load
-            if (!parcelMap.contains(newP.parcelID))
+            if (!parcelMap.contains(newP.getParcelID()))
             {
                 priorityQueue.insert(newP);
-                parcelMap.insert(newP.parcelID, newP);
+                parcelMap.insert(newP.getParcelID(), newP);
                 loadedCount++;
             }
         }

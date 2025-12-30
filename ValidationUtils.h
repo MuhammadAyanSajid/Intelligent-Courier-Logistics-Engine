@@ -209,6 +209,85 @@ namespace Utils
             }
         }
     }
+
+    // Check if string is alphanumeric (letters, numbers, spaces allowed)
+    bool isAlphanumeric(const string &s)
+    {
+        if (s.empty())
+            return false;
+        for (size_t i = 0; i < s.length(); i++)
+        {
+            char c = s[i];
+            bool valid = (c >= 'A' && c <= 'Z') ||
+                         (c >= 'a' && c <= 'z') ||
+                         (c >= '0' && c <= '9') ||
+                         c == ' ' || c == '-' || c == ',' || c == '.';
+            if (!valid)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Get alphanumeric string input (for addresses)
+    string getAlphanumericInput(string prompt)
+    {
+        string value;
+        while (true)
+        {
+            cout << prompt;
+            if (cin.eof())
+                return "";
+            getline(cin, value);
+
+            if (!value.empty() && isAlphanumeric(value))
+            {
+                return value;
+            }
+            cout << "Error: Input must contain only letters, numbers, spaces, commas, periods, and hyphens.\n";
+        }
+    }
+
+    // Validate positive number
+    bool isPositive(int value)
+    {
+        return value > 0;
+    }
+
+    // Get a positive integer input
+    int getPositiveIntInput(string prompt)
+    {
+        int value;
+        while (true)
+        {
+            cout << prompt;
+            if (cin.eof())
+                return 1;
+            if (cin >> value && value > 0)
+            {
+                clearInputBuffer();
+                return value;
+            }
+            else
+            {
+                cout << "Error: Please enter a positive number.\n";
+                clearInputBuffer();
+            }
+        }
+    }
+
+    // Validate parcel status for operations
+    bool canModifyParcel(const string &status)
+    {
+        return status != "Delivered" && status != "Returned to Sender" && status != "Missing";
+    }
+
+    // Display validation error with context
+    void showValidationError(const string &field, const string &reason)
+    {
+        cout << "Validation Error [" << field << "]: " << reason << "\n";
+    }
 }
 
 #endif // VALIDATION_UTILS_H
