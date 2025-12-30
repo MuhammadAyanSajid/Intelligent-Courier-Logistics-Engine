@@ -3,7 +3,7 @@
 
 CourierOperations::CourierOperations() : riders(50), missingParcels(50), nextRiderID(1) {}
 
-// ============== Pickup Queue Operations ==============
+// 
 
 void CourierOperations::addToPickupQueue(Parcel p)
 {

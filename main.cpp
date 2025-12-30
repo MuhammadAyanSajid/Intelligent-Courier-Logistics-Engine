@@ -5,6 +5,8 @@
 #include "Graph.h"
 #include "CourierOperations.h"
 #include "ValidationUtils.h"
+#include "WebServer.h"
+#include <cstring>
 
 using namespace std;
 
@@ -85,8 +87,27 @@ void displayRider(const Rider &r)
     cout << "+----------------------------------------------------+\n";
 }
 
-int main()
+// Function to run CLI mode
+void runCLI(Graph &cityMap, ParcelManager &pm, CourierOperations &ops, string &warehouseCity);
+
+int main(int argc, char *argv[])
 {
+    // Check for --web flag
+    bool webMode = false;
+    int webPort = 8080;
+
+    for (int i = 1; i < argc; i++)
+    {
+        if (strcmp(argv[i], "--web") == 0)
+        {
+            webMode = true;
+        }
+        else if (strcmp(argv[i], "--port") == 0 && i + 1 < argc)
+        {
+            webPort = atoi(argv[++i]);
+        }
+    }
+
     displayHeader();
 
     // 1. Initialize Graph & Load Data
@@ -116,9 +137,26 @@ int main()
     pm.loadParcels("parcels.txt");
 
     // Track warehouse location (configurable)
-    string warehouseCity = "A";
+    string warehouseCity = "Karachi";
     cout << "[INIT] Warehouse set to: " << warehouseCity << "\n";
 
+    // Check mode
+    if (webMode)
+    {
+        // Start Web Server
+        cout << "\n[MODE] Starting Web Interface...\n";
+        WebServer server(pm, ops, cityMap, warehouseCity);
+        server.start(webPort);
+        return 0;
+    }
+
+    // CLI Mode
+    runCLI(cityMap, pm, ops, warehouseCity);
+    return 0;
+}
+
+void runCLI(Graph &cityMap, ParcelManager &pm, CourierOperations &ops, string &warehouseCity)
+{
     int choice;
     do
     {
@@ -968,6 +1006,4 @@ int main()
         }
 
     } while (choice != 0);
-
-    return 0;
 }

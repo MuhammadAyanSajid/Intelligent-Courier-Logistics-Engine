@@ -25,6 +25,7 @@ public:
     Parcel peekHighPriority();
     Parcel getParcel(int id);
     bool hasParcels();
+    CustomVector<Parcel> getAllParcels(); // Get all parcels for web API
 
     // Re-insert a parcel (for undo)
     void reinsertParcel(Parcel p);

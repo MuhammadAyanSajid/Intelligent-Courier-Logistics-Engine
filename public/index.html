@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courier Logistics System</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+    <div class="header">
+        <h1>🚚 Courier Logistics System</h1>
+        <div class="status-badge">
+            <span id="systemStatus">Connected</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="nav-item active" data-section="dashboard">📊 Dashboard</div>
+            <div class="nav-item" data-section="parcels">📦 Parcels</div>
+            <div class="nav-item" data-section="queues">🔄 Queues</div>
+            <div class="nav-item" data-section="riders">🏍️ Riders</div>
+            <div class="nav-item" data-section="routes">🗺️ Route Finder</div>
+            <div class="nav-item" data-section="graph">🌐 Network Map</div>
+        </div>
+
+        <div class="main-content">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section active">
+                <div class="card">
+                    <h2>System Overview</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="number" id="totalParcels">0</div>
+                            <div class="label">Total Parcels</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number" id="totalRiders">0</div>
+                            <div class="label">Active Riders</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number" id="totalCities">0</div>
+                            <div class="label">Cities</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number" id="totalZones">0</div>
+                            <div class="label">Zones</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Queue Status</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="number" id="pickupQueue">0</div>
+                            <div class="label">Pickup Queue</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number" id="warehouseQueue">0</div>
+                            <div class="label">Warehouse</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number" id="transitQueue">0</div>
+                            <div class="label">In Transit</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number" id="missingParcels">0</div>
+                            <div class="label">Missing</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Quick Actions</h2>
+                    <button class="btn btn-primary" onclick="dispatchNext()">Dispatch Next Parcel</button>
+                    <button class="btn btn-secondary" onclick="undoAction()">↩️ Undo Last Action</button>
+                    <button class="btn btn-secondary" onclick="refreshAll()">🔄 Refresh Data</button>
+                </div>
+            </div>
+
+            <!-- Parcels Section -->
+            <div id="parcels" class="section">
+                <div class="card">
+                    <h2>Add New Parcel</h2>
+                    <form id="addParcelForm" onsubmit="addParcel(event)">
+                        <div class="inline-form">
+                            <div class="form-group">
+                                <label>Parcel ID</label>
+                                <input type="number" id="parcelId" required min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Destination</label>
+                                <select id="parcelDest" required>
+                                    <!-- Cities loaded dynamically -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Weight (kg)</label>
+                                <input type="number" id="parcelWeight" required min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Priority (1-5)</label>
+                                <input type="number" id="parcelPriority" value="3" min="1" max="5">
+                            </div>
+                            <div class="form-group">
+                                <label>Sender</label>
+                                <input type="text" id="parcelSender" placeholder="Warehouse">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Parcel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>All Parcels</h2>
+                    <table id="parcelsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Destination</th>
+                                <th>Zone</th>
+                                <th>Weight</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Rider</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="parcelsBody">
+                            <!-- Parcels loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Queues Section -->
+            <div id="queues" class="section">
+                <div class="card">
+                    <h2>Queue Management</h2>
+                    <div class="queue-status">
+                        <div class="queue-card">
+                            <h3>📥 Pickup Queue</h3>
+                            <p>Size: <strong id="pickupSize">0</strong></p>
+                            <p id="pickupNext" class="hidden">Next: <strong></strong></p>
+                            <button class="btn btn-primary" onclick="processPickup()">Process Next Pickup</button>
+                        </div>
+
+                        <div class="queue-card">
+                            <h3>🏭 Warehouse Stack</h3>
+                            <p>Size: <strong id="warehouseSize">0</strong></p>
+                            <p id="warehouseNext" class="hidden">Next: <strong></strong></p>
+                            <button class="btn btn-primary" onclick="loadFromWarehouse()">Load from Warehouse</button>
+                        </div>
+
+                        <div class="queue-card">
+                            <h3>🚚 Transit Queue</h3>
+                            <p>Size: <strong id="transitSize">0</strong></p>
+                            <p id="transitNext" class="hidden">Next: <strong></strong></p>
+                            <button class="btn btn-primary" onclick="completeTransit()">Complete Transit</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Add to Queue</h2>
+                    <div class="inline-form">
+                        <div class="form-group">
+                            <label>Parcel ID</label>
+                            <input type="number" id="queueParcelId" min="1">
+                        </div>
+                        <button class="btn btn-secondary" onclick="addToPickup()">Add to Pickup</button>
+                        <button class="btn btn-secondary" onclick="addToWarehouse()">Add to Warehouse</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Riders Section -->
+            <div id="riders" class="section">
+                <div class="card">
+                    <h2>Add New Rider</h2>
+                    <form id="addRiderForm" onsubmit="addRider(event)">
+                        <div class="inline-form">
+                            <div class="form-group">
+                                <label>Name</label>
+                                <input type="text" id="riderName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Capacity (kg)</label>
+                                <input type="number" id="riderCapacity" value="50" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Max Parcels</label>
+                                <input type="number" id="riderMaxParcels" value="10" min="1">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Rider</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>Assign Parcel to Rider</h2>
+                    <div class="inline-form">
+                        <div class="form-group">
+                            <label>Parcel ID</label>
+                            <input type="number" id="assignParcelId" min="1">
+                        </div>
+                        <button class="btn btn-warning" onclick="autoAssign()">Auto-Assign Best Rider</button>
+                        <span style="margin: 0 10px;">or</span>
+                        <div class="form-group">
+                            <label>Rider ID</label>
+                            <input type="number" id="assignRiderId" min="1">
+                        </div>
+                        <button class="btn btn-secondary" onclick="manualAssign()">Manual Assign</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>All Riders</h2>
+                    <div id="ridersContainer">
+                        <!-- Riders loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Routes Section -->
+            <div id="routes" class="section">
+                <div class="card">
+                    <h2>Find Routes</h2>
+                    <div class="inline-form">
+                        <div class="form-group">
+                            <label>From</label>
+                            <select id="routeFrom">
+                                <!-- Cities loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>To</label>
+                            <select id="routeTo">
+                                <!-- Cities loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>K Routes</label>
+                            <input type="number" id="routeK" value="3" min="1" max="5">
+                        </div>
+                        <button class="btn btn-primary" onclick="findRoutes()">Find Routes</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Results</h2>
+                    <div id="routeResults">
+                        <p style="color: #888;">Enter cities above to find routes</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Road Management</h2>
+                    <div class="inline-form">
+                        <div class="form-group">
+                            <label>From</label>
+                            <select id="roadFrom">
+                                <!-- Cities loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>To</label>
+                            <select id="roadTo">
+                                <!-- Cities loaded dynamically -->
+                            </select>
+                        </div>
+                        <button class="btn btn-danger" onclick="blockRoad()">Block Road</button>
+                        <div class="form-group">
+                            <label>Weight</label>
+                            <input type="number" id="roadWeight" min="1" placeholder="For unblock">
+                        </div>
+                        <button class="btn btn-success" onclick="unblockRoad()">Unblock Road</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graph Section -->
+            <div id="graph" class="section">
+                <div class="card">
+                    <h2>Network Map</h2>
+                    <div class="graph-controls">
+                        <button class="btn btn-secondary" onclick="resetGraphView()">Reset View</button>
+                        <button class="btn btn-secondary" onclick="refreshGraph()">Refresh Data</button>
+                        <span style="color: #888; margin-left: 20px;">Drag to move nodes • Scroll to zoom</span>
+                    </div>
+                    <canvas id="graphCanvas" width="800" height="500"></canvas>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #00d9a5;"></div>
+                            <span>South Zone</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #e94560;"></div>
+                            <span>Central Zone</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #17a2b8;"></div>
+                            <span>North Zone</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ffc107;"></div>
+                            <span>West Zone</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #dc3545;"></div>
+                            <span>Blocked Road</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Base URL
+        const API = '';
+
+        // State
+        let cities = [];
+        let graphData = null;
+        let nodePositions = {};
+        let scale = 1;
+        let offsetX = 0, offsetY = 0;
+        let dragging = null;
+        let panning = false;
+        let lastMouse = { x: 0, y: 0 };
+
+        // Zone colors
+        const zoneColors = {
+            'South': '#00d9a5',
+            'Central': '#e94560',
+            'North': '#17a2b8',
+            'West': '#ffc107',
+            'East': '#9b59b6',
+            'default': '#95a5a6'
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNavigation();
+            setupGraphCanvas();
+            refreshAll();
+        });
+
+        // Navigation
+        function setupNavigation() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                    item.classList.add('active');
+                    document.getElementById(item.dataset.section).classList.add('active');
+                });
+            });
+        }
+
+        // Toast notifications
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // API Helpers
+        async function apiGet(endpoint) {
+            const res = await fetch(API + endpoint);
+            return res.json();
+        }
+
+        async function apiPost(endpoint, data = {}) {
+            const res = await fetch(API + endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return res.json();
+        }
+
+        // Refresh all data
+        async function refreshAll() {
+            await Promise.all([
+                loadStatus(),
+                loadCities(),
+                loadParcels(),
+                loadRiders(),
+                loadQueues(),
+                loadGraph()
+            ]);
+        }
+
+        // Load system status
+        async function loadStatus() {
+            try {
+                const res = await apiGet('/api/status');
+                if (res.success) {
+                    const d = res.data;
+                    document.getElementById('totalParcels').textContent = d.parcelCount;
+                    document.getElementById('totalRiders').textContent = d.riderCount;
+                    document.getElementById('totalCities').textContent = d.cityCount;
+                    document.getElementById('totalZones').textContent = d.zoneCount;
+                    document.getElementById('pickupQueue').textContent = d.pickupQueueSize;
+                    document.getElementById('warehouseQueue').textContent = d.warehouseQueueSize;
+                    document.getElementById('transitQueue').textContent = d.transitQueueSize;
+                    document.getElementById('missingParcels').textContent = d.missingParcelsCount;
+                }
+            } catch (e) {
+                console.error('Status load error:', e);
+            }
+        }
+
+        // Load cities
+        async function loadCities() {
+            try {
+                const res = await apiGet('/api/cities');
+                if (res.success) {
+                    cities = res.data;
+                    const selects = ['parcelDest', 'routeFrom', 'routeTo', 'roadFrom', 'roadTo'];
+                    selects.forEach(id => {
+                        const select = document.getElementById(id);
+                        select.innerHTML = cities.map(c => `<option value="${c}">${c}</option>`).join('');
+                    });
+                }
+            } catch (e) {
+                console.error('Cities load error:', e);
+            }
+        }
+
+        // Load parcels
+        async function loadParcels() {
+            try {
+                const res = await apiGet('/api/parcels');
+                if (res.success) {
+                    const tbody = document.getElementById('parcelsBody');
+                    if (res.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;">No parcels</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = res.data.map(p => `
+                        <tr>
+                            <td>${p.parcelID}</td>
+                            <td>${p.destination}</td>
+                            <td>${p.zone || '-'}</td>
+                            <td>${p.weight} kg</td>
+                            <td>${p.priority}</td>
+                            <td><span class="status-badge ${getStatusClass(p.status)}">${p.status}</span></td>
+                            <td>${p.assignedRiderID > 0 ? '#' + p.assignedRiderID : '-'}</td>
+                            <td>
+                                ${p.status !== 'Delivered' && p.status !== 'Returned' ? `
+                                    <button class="btn btn-success btn-sm" onclick="deliverParcel(${p.parcelID})">✓</button>
+                                    <button class="btn btn-danger btn-sm" onclick="returnParcel(${p.parcelID})">↩</button>
+                                    <button class="btn btn-warning btn-sm" onclick="attemptDelivery(${p.parcelID})">⚠</button>
+                                ` : ''}
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (e) {
+                console.error('Parcels load error:', e);
+            }
+        }
+
+        function getStatusClass(status) {
+            if (status.includes('Delivered')) return 'status-delivered';
+            if (status.includes('Transit') || status.includes('Out for')) return 'status-transit';
+            if (status.includes('Returned')) return 'status-returned';
+            return 'status-pending';
+        }
+
+        // Load riders
+        async function loadRiders() {
+            try {
+                const res = await apiGet('/api/riders');
+                if (res.success) {
+                    const container = document.getElementById('ridersContainer');
+                    if (res.data.length === 0) {
+                        container.innerHTML = '<p style="color:#888;">No riders. Add one above.</p>';
+                        return;
+                    }
+                    container.innerHTML = res.data.map(r => {
+                        const capacityPct = (r.currentLoad / r.maxCapacity) * 100;
+                        const parcelsPct = (r.assignedParcels / r.maxParcels) * 100;
+                        return `
+                        <div class="rider-card">
+                            <div class="rider-header">
+                                <span class="rider-name">#${r.riderID} - ${r.name}</span>
+                                <span>${r.assignedParcels}/${r.maxParcels} parcels | ${r.currentLoad}/${r.maxCapacity} kg</span>
+                            </div>
+                            <div>Zone: ${r.assignedZone || 'Any'}</div>
+                            <div style="margin-top:10px;">
+                                <small>Capacity</small>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width:${capacityPct}%"></div>
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                }
+            } catch (e) {
+                console.error('Riders load error:', e);
+            }
+        }
+
+        // Load queues
+        async function loadQueues() {
+            try {
+                const [pickup, warehouse, transit] = await Promise.all([
+                    apiGet('/api/queues/pickup'),
+                    apiGet('/api/queues/warehouse'),
+                    apiGet('/api/queues/transit')
+                ]);
+
+                if (pickup.success) {
+                    document.getElementById('pickupSize').textContent = pickup.data.size;
+                    const next = document.getElementById('pickupNext');
+                    if (pickup.data.next) {
+                        next.querySelector('strong').textContent = `Parcel #${pickup.data.next.parcelID}`;
+                        next.classList.remove('hidden');
+                    } else {
+                        next.classList.add('hidden');
+                    }
+                }
+
+                if (warehouse.success) {
+                    document.getElementById('warehouseSize').textContent = warehouse.data.size;
+                    const next = document.getElementById('warehouseNext');
+                    if (warehouse.data.next) {
+                        next.querySelector('strong').textContent = `Parcel #${warehouse.data.next.parcelID}`;
+                        next.classList.remove('hidden');
+                    } else {
+                        next.classList.add('hidden');
+                    }
+                }
+
+                if (transit.success) {
+                    document.getElementById('transitSize').textContent = transit.data.size;
+                    const next = document.getElementById('transitNext');
+                    if (transit.data.next) {
+                        next.querySelector('strong').textContent = `Parcel #${transit.data.next.parcelID}`;
+                        next.classList.remove('hidden');
+                    } else {
+                        next.classList.add('hidden');
+                    }
+                }
+            } catch (e) {
+                console.error('Queues load error:', e);
+            }
+        }
+
+        // Parcel actions
+        async function addParcel(e) {
+            e.preventDefault();
+            const data = {
+                parcelID: parseInt(document.getElementById('parcelId').value),
+                destination: document.getElementById('parcelDest').value,
+                weight: parseInt(document.getElementById('parcelWeight').value),
+                priority: parseInt(document.getElementById('parcelPriority').value) || 3,
+                senderAddress: document.getElementById('parcelSender').value || 'Warehouse'
+            };
+            const res = await apiPost('/api/parcels', data);
+            if (res.success) {
+                showToast('Parcel added!', 'success');
+                document.getElementById('addParcelForm').reset();
+                refreshAll();
+            } else {
+                showToast(res.message, 'error');
+            }
+        }
+
+        async function dispatchNext() {
+            const res = await apiPost('/api/parcels/dispatch');
+            if (res.success) {
+                showToast('Parcel dispatched!', 'success');
+                if (res.data.routes && res.data.routes.length > 0) {
+                    displayRoutes(res.data.routes);
+                }
+                refreshAll();
+            } else {
+                showToast(res.message, 'error');
+            }
+        }
+
+        async function deliverParcel(id) {
+            const res = await apiPost(`/api/parcels/${id}/deliver`);
+            if (res.success) {
+                showToast('Parcel delivered!', 'success');
+                refreshAll();
+            } else {
+                showToast(res.message, 'error');
+            }
+        }
+
+        async function returnParcel(id) {
+            const reason = prompt('Reason for return:') || 'Returned by request';
+            const res = await apiPost(`/api/parcels/${id}/return`, { reason });
+            if (res.success) {
+                showToast('Parcel marked for return', 'success');
+                refreshAll();
+            } else {
+                showToast(res.message, 'error');
+            }
+        }
+
+        async function attemptDelivery(id) {
+            const reason = prompt('Reason for failed attempt:') || 'Recipient not available';
+            const res = await apiPost(`/api/parcels/${id}/attempt`, { reason });
+            showToast(res.message, res.success ? 'info' : 'error');
+            refreshAll();
+        }
+
+        // Queue actions
+        async function addToPickup() {
+            const id = document.getElementById('queueParcelId').value;
+            if (!id) return showToast('Enter parcel ID', 'error');
+            const res = await apiPost(`/api/queues/pickup/${id}`);
+            showToast(res.message, res.success ? 'success' : 'error');
+            refreshAll();
+        }
+
+        async function addToWarehouse() {
+            const id = document.getElementById('queueParcelId').value;
+            if (!id) return showToast('Enter parcel ID', 'error');
+            const res = await apiPost(`/api/queues/warehouse/${id}`);
+            showToast(res.message, res.success ? 'success' : 'error');
+            refreshAll();
+        }
+
+        async function processPickup() {
+            const res = await apiPost('/api/queues/pickup/process');
+            showToast(res.message, res.success ? 'success' : 'error');
+            refreshAll();
+        }
+
+        async function loadFromWarehouse() {
+            const res = await apiPost('/api/queues/warehouse/load');
+            showToast(res.message, res.success ? 'success' : 'error');
+            refreshAll();
+        }
+
+        async function completeTransit() {
+            const res = await apiPost('/api/queues/transit/complete');
+            showToast(res.message, res.success ? 'success' : 'error');
+            refreshAll();
+        }
+
+        // Rider actions
+        async function addRider(e) {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('riderName').value,
+                capacity: parseInt(document.getElementById('riderCapacity').value) || 50,
+                maxParcels: parseInt(document.getElementById('riderMaxParcels').value) || 10
+            };
+            const res = await apiPost('/api/riders', data);
+            if (res.success) {
+                showToast('Rider added!', 'success');
+                document.getElementById('addRiderForm').reset();
+                refreshAll();
+            } else {
+                showToast(res.message, 'error');
+            }
+        }
+
+        async function autoAssign() {
+            const id = document.getElementById('assignParcelId').value;
+            if (!id) return showToast('Enter parcel ID', 'error');
+            const res = await apiPost(`/api/riders/auto-assign/${id}`);
+            showToast(res.message, res.success ? 'success' : 'error');
+            refreshAll();
+        }
+
+        async function manualAssign() {
+            const parcelId = document.getElementById('assignParcelId').value;
+            const riderId = document.getElementById('assignRiderId').value;
+            if (!parcelId || !riderId) return showToast('Enter both IDs', 'error');
+            const res = await apiPost(`/api/riders/${riderId}/assign/${parcelId}`);
+            showToast(res.message, res.success ? 'success' : 'error');
+            refreshAll();
+        }
+
+        // Route actions
+        async function findRoutes() {
+            const from = document.getElementById('routeFrom').value;
+            const to = document.getElementById('routeTo').value;
+            const k = document.getElementById('routeK').value;
+            const res = await apiGet(`/api/routes?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&k=${k}`);
+            if (res.success) {
+                displayRoutes(res.data);
+            } else {
+                showToast(res.message, 'error');
+            }
+        }
+
+        function displayRoutes(routes) {
+            const container = document.getElementById('routeResults');
+            if (routes.length === 0) {
+                container.innerHTML = '<p style="color:#888;">No routes found</p>';
+                return;
+            }
+            container.innerHTML = routes.map((r, i) => `
+                <div class="route-result">
+                    <div class="route-path">Route ${i + 1}: ${r.path.join(' → ')}</div>
+                    <div>Total Distance: <strong>${r.totalWeight}</strong> km</div>
+                </div>
+            `).join('');
+        }
+
+        async function blockRoad() {
+            const from = document.getElementById('roadFrom').value;
+            const to = document.getElementById('roadTo').value;
+            const res = await apiPost('/api/roads/block', { from, to });
+            showToast(res.message, res.success ? 'success' : 'error');
+            refreshGraph();
+        }
+
+        async function unblockRoad() {
+            const from = document.getElementById('roadFrom').value;
+            const to = document.getElementById('roadTo').value;
+            const weight = parseInt(document.getElementById('roadWeight').value);
+            if (!weight) return showToast('Enter road weight', 'error');
+            const res = await apiPost('/api/roads/unblock', { from, to, weight });
+            showToast(res.message, res.success ? 'success' : 'error');
+            refreshGraph();
+        }
+
+        // Undo
+        async function undoAction() {
+            const res = await apiPost('/api/undo');
+            showToast(res.message, res.success ? 'success' : 'error');
+            refreshAll();
+        }
+
+        // ============== GRAPH VISUALIZATION ==============
+
+        async function loadGraph() {
+            try {
+                const res = await apiGet('/api/graph');
+                if (res.success) {
+                    graphData = res.data;
+                    initNodePositions();
+                    drawGraph();
+                }
+            } catch (e) {
+                console.error('Graph load error:', e);
+            }
+        }
+
+        function initNodePositions() {
+            const canvas = document.getElementById('graphCanvas');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(canvas.width, canvas.height) * 0.35;
+
+            graphData.cities.forEach((city, i) => {
+                if (!nodePositions[city.name]) {
+                    const angle = (2 * Math.PI * i) / graphData.cities.length - Math.PI / 2;
+                    nodePositions[city.name] = {
+                        x: centerX + radius * Math.cos(angle),
+                        y: centerY + radius * Math.sin(angle)
+                    };
+                }
+            });
+        }
+
+        function setupGraphCanvas() {
+            const canvas = document.getElementById('graphCanvas');
+
+            canvas.addEventListener('mousedown', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left - offsetX) / scale;
+                const y = (e.clientY - rect.top - offsetY) / scale;
+
+                // Check if clicking on a node
+                for (const [name, pos] of Object.entries(nodePositions)) {
+                    const dx = x - pos.x;
+                    const dy = y - pos.y;
+                    if (Math.sqrt(dx * dx + dy * dy) < 30) {
+                        dragging = name;
+                        return;
+                    }
+                }
+
+                // Start panning
+                panning = true;
+                lastMouse = { x: e.clientX, y: e.clientY };
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+
+                if (dragging) {
+                    nodePositions[dragging] = {
+                        x: (e.clientX - rect.left - offsetX) / scale,
+                        y: (e.clientY - rect.top - offsetY) / scale
+                    };
+                    drawGraph();
+                } else if (panning) {
+                    offsetX += e.clientX - lastMouse.x;
+                    offsetY += e.clientY - lastMouse.y;
+                    lastMouse = { x: e.clientX, y: e.clientY };
+                    drawGraph();
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                dragging = null;
+                panning = false;
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                dragging = null;
+                panning = false;
+            });
+
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                scale *= delta;
+                scale = Math.max(0.5, Math.min(3, scale));
+                drawGraph();
+            });
+        }
+
+        function drawGraph() {
+            const canvas = document.getElementById('graphCanvas');
+            const ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(scale, scale);
+
+            if (!graphData) {
+                ctx.restore();
+                return;
+            }
+
+            // Draw edges
+            graphData.edges.forEach(edge => {
+                const from = nodePositions[edge.from];
+                const to = nodePositions[edge.to];
+                if (!from || !to) return;
+
+                ctx.beginPath();
+                ctx.moveTo(from.x, from.y);
+                ctx.lineTo(to.x, to.y);
+                ctx.strokeStyle = edge.blocked ? '#dc3545' : '#4a5568';
+                ctx.lineWidth = edge.blocked ? 3 : 2;
+                if (edge.blocked) {
+                    ctx.setLineDash([5, 5]);
+                } else {
+                    ctx.setLineDash([]);
+                }
+                ctx.stroke();
+
+                // Draw weight label
+                const midX = (from.x + to.x) / 2;
+                const midY = (from.y + to.y) / 2;
+                ctx.fillStyle = '#888';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(edge.weight + ' km', midX, midY - 5);
+            });
+
+            ctx.setLineDash([]);
+
+            // Draw nodes
+            graphData.cities.forEach(city => {
+                const pos = nodePositions[city.name];
+                if (!pos) return;
+
+                // Node circle
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 25, 0, 2 * Math.PI);
+                ctx.fillStyle = zoneColors[city.zone] || zoneColors.default;
+                ctx.fill();
+                ctx.strokeStyle = '#1a1a2e';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Node label
+                ctx.fillStyle = '#1a1a2e';
+                ctx.font = 'bold 10px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(city.name, pos.x, pos.y);
+            });
+
+            ctx.restore();
+        }
+
+        function resetGraphView() {
+            scale = 1;
+            offsetX = 0;
+            offsetY = 0;
+            initNodePositions();
+            drawGraph();
+        }
+
+        function refreshGraph() {
+            loadGraph();
+        }
+    </script>
+</body>
+
+</html>

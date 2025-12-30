@@ -60,6 +60,11 @@ bool ParcelManager::hasParcels()
     return !priorityQueue.isEmpty();
 }
 
+CustomVector<Parcel> ParcelManager::getAllParcels()
+{
+    return parcelMap.getAllValues();
+}
+
 void ParcelManager::updateParcel(Parcel p)
 {
     // Update the copy in Map so it can be saved/retrieved correctly
