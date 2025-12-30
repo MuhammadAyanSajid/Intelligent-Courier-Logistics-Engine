@@ -598,7 +598,7 @@ CustomVector<RouteResult> Graph::findKShortestPaths(string startCity, string end
 
 void Graph::displayAlternativeRoutes(string startCity, string endCity, int k)
 {
-    cout << "\n─── ALTERNATIVE ROUTES (" << startCity << " -> " << endCity << ") ───\n";
+    cout << "\n--- ALTERNATIVE ROUTES (" << startCity << " -> " << endCity << ") ---\n";
 
     CustomVector<RouteResult> routes = findKShortestPaths(startCity, endCity, k);
 

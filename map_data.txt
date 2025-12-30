@@ -10,12 +10,12 @@ ROUTE Lahore Islamabad 8
 ROUTE Islamabad Quetta 15
 ROUTE Peshawar Quetta 5
 ZONE South
+ZONECITY South Peshawar
+ZONECITY South Quetta
 ZONE Central
-ZONE North
-ZONECITY South Karachi
+ZONECITY Central Karachi
 ZONECITY Central Lahore
-ZONECITY North Islamabad
-ZONECITY North Peshawar
-ZONECITY West Quetta
+ZONE North
 ZONE East
+ZONECITY East Islamabad
 ZONE West
