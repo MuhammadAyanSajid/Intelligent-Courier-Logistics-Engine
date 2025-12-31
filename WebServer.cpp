@@ -174,7 +174,8 @@ void WebServer::setupParcelEndpoints()
         act.setPrevStatus(prevStatus);
         ops.logAction(act);
         
-        pm.removeParcel(dispatched.getParcelID());
+        // Don't remove parcel from map - keep it so rider assignment works
+        // pm.removeParcel(dispatched.getParcelID());
         pm.saveParcels("parcels.txt");
         
         // Get routes

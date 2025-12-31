@@ -709,7 +709,7 @@
             container.innerHTML = routes.map((r, i) => `
                 <div class="route-result">
                     <div class="route-path">Route ${i + 1}: ${r.path.join(' → ')}</div>
-                    <div>Total Distance: <strong>${r.totalWeight}</strong> km</div>
+                    <div>Total Distance: <strong>${r.totalCost}</strong> km</div>
                 </div>
             `).join('');
         }
