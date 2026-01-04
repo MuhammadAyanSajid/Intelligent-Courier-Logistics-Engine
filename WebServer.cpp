@@ -126,9 +126,14 @@ void WebServer::setupParcelEndpoints()
         }
         
         if (pm.parcelExists(id)) {
-            res.status = 400;
-            res.set_content(errorResponse("Parcel ID already exists"), "application/json");
-            return;
+            // Check if the existing parcel is delivered/returned and can be replaced
+            if (pm.canReuseParcelId(id)) {
+                pm.removeParcel(id); // Remove the old delivered parcel
+            } else {
+                res.status = 400;
+                res.set_content(errorResponse("Parcel ID already exists and is not yet delivered"), "application/json");
+                return;
+            }
         }
         
         if (!cityMap.cityExists(dest)) {
@@ -661,6 +666,38 @@ void WebServer::setupRouteEndpoints()
         res.set_header("Access-Control-Allow-Origin", "*");
         CustomVector<string> zones = cityMap.getAllZones();
         res.set_content(successResponse("Zones retrieved", stringsToJson(zones)), "application/json"); });
+
+    // GET /api/parcels/:id/route - Get route for a parcel's journey
+    server.Get(R"(/api/parcels/(\d+)/route)", [this](const httplib::Request &req, httplib::Response &res)
+               {
+        res.set_header("Content-Type", "application/json");
+        res.set_header("Access-Control-Allow-Origin", "*");
+        
+        int id = stoi(req.matches[1]);
+        Parcel p = pm.getParcel(id);
+        
+        if (p.getParcelID() == 0) {
+            res.status = 404;
+            res.set_content(errorResponse("Parcel not found"), "application/json");
+            return;
+        }
+        
+        // Get the route from warehouse to destination
+        CustomVector<RouteResult> routes = cityMap.findKShortestPaths(warehouseCity, p.getDestination(), 1);
+        
+        stringstream data;
+        data << "{\"parcel\":" << parcelToJson(p);
+        data << ",\"origin\":\"" << escapeJson(warehouseCity) << "\"";
+        data << ",\"destination\":\"" << escapeJson(p.getDestination()) << "\"";
+        
+        if (routes.getSize() > 0 && routes[0].valid) {
+            data << ",\"route\":" << routeToJson(routes[0]);
+        } else {
+            data << ",\"route\":null";
+        }
+        data << "}";
+        
+        res.set_content(successResponse("Parcel route found", data.str()), "application/json"); });
 
     // GET /api/graph - Get graph data for visualization
     server.Get("/api/graph", [this](const httplib::Request &, httplib::Response &res)

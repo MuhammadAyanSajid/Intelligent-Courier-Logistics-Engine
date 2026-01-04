@@ -3,8 +3,7 @@ CITY Lahore
 CITY Islamabad
 CITY Peshawar
 CITY Quetta
-ROUTE Karachi Lahore 10
-ROUTE Karachi Islamabad 5
+ROUTE Karachi Islamabad 33
 ROUTE Lahore Peshawar 20
 ROUTE Lahore Islamabad 8
 ROUTE Islamabad Quetta 15

@@ -173,8 +173,16 @@ void runCLI(Graph &cityMap, ParcelManager &pm, CourierOperations &ops, string &w
             // Check for duplicate
             if (pm.parcelExists(id))
             {
-                cout << "Error: Parcel ID " << id << " already exists!\n";
-                break;
+                if (pm.canReuseParcelId(id))
+                {
+                    cout << "Note: Previous parcel #" << id << " was delivered/returned. Replacing with new parcel.\n";
+                    pm.removeParcel(id);
+                }
+                else
+                {
+                    cout << "Error: Parcel ID " << id << " already exists and is not yet delivered!\n";
+                    break;
+                }
             }
 
             string dest = Utils::getValidCity("Enter Destination City: ", cityMap);

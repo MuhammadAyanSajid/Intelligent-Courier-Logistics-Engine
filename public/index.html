@@ -20,6 +20,7 @@
         <div class="sidebar">
             <div class="nav-item active" data-section="dashboard">📊 Dashboard</div>
             <div class="nav-item" data-section="parcels">📦 Parcels</div>
+            <div class="nav-item" data-section="tracking">🛤️ Track Parcel</div>
             <div class="nav-item" data-section="queues">🔄 Queues</div>
             <div class="nav-item" data-section="riders">🏍️ Riders</div>
             <div class="nav-item" data-section="routes">🗺️ Route Finder</div>
@@ -133,6 +134,72 @@
                             <!-- Parcels loaded dynamically -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Parcel Tracking Section -->
+            <div id="tracking" class="section">
+                <div class="card">
+                    <h2>🛤️ Track Parcel Journey</h2>
+                    <div class="inline-form">
+                        <div class="form-group">
+                            <label>Parcel ID</label>
+                            <input type="number" id="trackParcelId" min="1" placeholder="Enter parcel ID">
+                        </div>
+                        <button class="btn btn-primary" onclick="trackParcel()">Track Parcel</button>
+                        <button class="btn btn-secondary" onclick="stopTracking()">Stop Animation</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Parcel Information</h2>
+                    <div id="trackingInfo">
+                        <p style="color: #888;">Enter a parcel ID above to see its journey</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Live Route Visualization</h2>
+                    <div class="graph-controls">
+                        <button class="btn btn-secondary" onclick="resetTrackingView()">Reset View</button>
+                        <button class="btn btn-success" onclick="playAnimation()">▶ Play Journey</button>
+                        <button class="btn btn-warning" onclick="pauseAnimation()">⏸ Pause</button>
+                        <div class="form-group" style="display:inline-block; margin-left:20px;">
+                            <label>Speed</label>
+                            <input type="range" id="animationSpeed" min="1" max="10" value="5"
+                                style="width:100px; vertical-align:middle;">
+                        </div>
+                    </div>
+                    <canvas id="trackingCanvas" width="900" height="550"></canvas>
+                    <div id="journeyProgress" style="margin-top:15px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span>Journey Progress:</span>
+                            <div style="flex:1; height:8px; background:#2d2d44; border-radius:4px; overflow:hidden;">
+                                <div id="progressBar"
+                                    style="width:0%; height:100%; background:linear-gradient(90deg, #00d9a5, #17a2b8); transition:width 0.3s;">
+                                </div>
+                            </div>
+                            <span id="progressText">0%</span>
+                        </div>
+                    </div>
+                    <div class="legend" style="margin-top:15px;">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #00d9a5;"></div>
+                            <span>Origin (Warehouse)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #e94560;"></div>
+                            <span>Destination</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ffc107;"></div>
+                            <span>Route Path</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #17a2b8;"></div>
+                            <span>📦 Parcel Position</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -909,6 +976,510 @@
         function refreshGraph() {
             loadGraph();
         }
+
+        // ============== PARCEL TRACKING VISUALIZATION ==============
+
+        // Tracking state
+        let trackingData = null;
+        let trackingNodePositions = {};
+        let trackingScale = 1;
+        let trackingOffsetX = 0, trackingOffsetY = 0;
+        let trackingDragging = null;
+        let trackingPanning = false;
+        let trackingLastMouse = { x: 0, y: 0 };
+        let animationId = null;
+        let animationProgress = 0;
+        let isPlaying = false;
+        let parcelPosition = { x: 0, y: 0 };
+        let currentSegment = 0;
+        let segmentProgress = 0;
+
+        // Initialize tracking canvas
+        function setupTrackingCanvas() {
+            const canvas = document.getElementById('trackingCanvas');
+            if (!canvas) return;
+
+            canvas.addEventListener('mousedown', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left - trackingOffsetX) / trackingScale;
+                const y = (e.clientY - rect.top - trackingOffsetY) / trackingScale;
+
+                for (const [name, pos] of Object.entries(trackingNodePositions)) {
+                    const dx = x - pos.x;
+                    const dy = y - pos.y;
+                    if (Math.sqrt(dx * dx + dy * dy) < 30) {
+                        trackingDragging = name;
+                        return;
+                    }
+                }
+
+                trackingPanning = true;
+                trackingLastMouse = { x: e.clientX, y: e.clientY };
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+
+                if (trackingDragging) {
+                    trackingNodePositions[trackingDragging] = {
+                        x: (e.clientX - rect.left - trackingOffsetX) / trackingScale,
+                        y: (e.clientY - rect.top - trackingOffsetY) / trackingScale
+                    };
+                    drawTrackingGraph();
+                } else if (trackingPanning) {
+                    trackingOffsetX += e.clientX - trackingLastMouse.x;
+                    trackingOffsetY += e.clientY - trackingLastMouse.y;
+                    trackingLastMouse = { x: e.clientX, y: e.clientY };
+                    drawTrackingGraph();
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                trackingDragging = null;
+                trackingPanning = false;
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                trackingDragging = null;
+                trackingPanning = false;
+            });
+
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                trackingScale *= delta;
+                trackingScale = Math.max(0.5, Math.min(3, trackingScale));
+                drawTrackingGraph();
+            });
+        }
+
+        // Track a parcel
+        async function trackParcel() {
+            const id = document.getElementById('trackParcelId').value;
+            if (!id) {
+                showToast('Enter a parcel ID', 'error');
+                return;
+            }
+
+            try {
+                // Get parcel route and graph data
+                const [routeRes, graphRes] = await Promise.all([
+                    apiGet(`/api/parcels/${id}/route`),
+                    apiGet('/api/graph')
+                ]);
+
+                if (!routeRes.success) {
+                    showToast(routeRes.message, 'error');
+                    return;
+                }
+
+                if (!graphRes.success) {
+                    showToast('Failed to load map data', 'error');
+                    return;
+                }
+
+                trackingData = {
+                    parcel: routeRes.data.parcel,
+                    origin: routeRes.data.origin,
+                    destination: routeRes.data.destination,
+                    route: routeRes.data.route,
+                    graph: graphRes.data
+                };
+
+                // Display parcel info
+                displayTrackingInfo(trackingData);
+
+                // Initialize tracking visualization
+                initTrackingPositions();
+                resetAnimation();
+                drawTrackingGraph();
+
+                showToast('Parcel route loaded! Click Play to animate', 'success');
+            } catch (e) {
+                console.error('Track parcel error:', e);
+                showToast('Error tracking parcel', 'error');
+            }
+        }
+
+        function displayTrackingInfo(data) {
+            const container = document.getElementById('trackingInfo');
+            const p = data.parcel;
+            const route = data.route;
+
+            let routeHtml = '';
+            if (route && route.valid) {
+                routeHtml = `
+                    <div style="margin-top:15px; padding:15px; background:#2d2d44; border-radius:8px;">
+                        <h4 style="margin:0 0 10px 0; color:#00d9a5;">📍 Route Details</h4>
+                        <div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px;">
+                            ${route.path.map((city, i) => `
+                                <span style="padding:5px 12px; background:${i === 0 ? '#00d9a5' : i === route.path.length - 1 ? '#e94560' : '#4a5568'}; border-radius:20px; font-weight:bold;">
+                                    ${city}
+                                </span>
+                                ${i < route.path.length - 1 ? '<span style="color:#ffc107;">→</span>' : ''}
+                            `).join('')}
+                        </div>
+                        <div style="margin-top:10px; color:#888;">
+                            Total Distance: <strong style="color:#17a2b8;">${route.totalCost} km</strong> | 
+                            Stops: <strong style="color:#17a2b8;">${route.path.length}</strong>
+                        </div>
+                    </div>
+                `;
+            } else {
+                routeHtml = '<p style="color:#e94560;">No valid route found for this parcel</p>';
+            }
+
+            container.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">#${p.parcelID}</div>
+                        <div class="label">Parcel ID</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">${data.origin}</div>
+                        <div class="label">Origin</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">${p.destination}</div>
+                        <div class="label">Destination</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number"><span class="status-badge ${getStatusClass(p.status)}">${p.status}</span></div>
+                        <div class="label">Status</div>
+                    </div>
+                </div>
+                ${routeHtml}
+            `;
+        }
+
+        function initTrackingPositions() {
+            const canvas = document.getElementById('trackingCanvas');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            if (!trackingData || !trackingData.graph) return;
+
+            // Position route cities in a line for better visualization
+            const route = trackingData.route;
+            if (route && route.valid && route.path.length > 0) {
+                const pathCities = route.path;
+                const startX = 100;
+                const endX = canvas.width - 100;
+                const spacing = (endX - startX) / (pathCities.length - 1 || 1);
+
+                // Position route cities horizontally
+                pathCities.forEach((city, i) => {
+                    trackingNodePositions[city] = {
+                        x: startX + i * spacing,
+                        y: centerY
+                    };
+                });
+
+                // Position other cities in a circle below
+                const otherCities = trackingData.graph.cities.filter(c => !pathCities.includes(c.name));
+                const radius = 120;
+                otherCities.forEach((city, i) => {
+                    const angle = Math.PI * (i / (otherCities.length - 1 || 1));
+                    trackingNodePositions[city.name] = {
+                        x: centerX + radius * 1.5 * Math.cos(angle),
+                        y: centerY + 150 + radius * 0.5 * Math.sin(angle)
+                    };
+                });
+            } else {
+                // Default circular layout
+                const radius = Math.min(canvas.width, canvas.height) * 0.35;
+                trackingData.graph.cities.forEach((city, i) => {
+                    const angle = (2 * Math.PI * i) / trackingData.graph.cities.length - Math.PI / 2;
+                    trackingNodePositions[city.name] = {
+                        x: centerX + radius * Math.cos(angle),
+                        y: centerY + radius * Math.sin(angle)
+                    };
+                });
+            }
+
+            // Set initial parcel position
+            if (route && route.valid && route.path.length > 0) {
+                const startCity = trackingNodePositions[route.path[0]];
+                if (startCity) {
+                    parcelPosition = { x: startCity.x, y: startCity.y };
+                }
+            }
+        }
+
+        function drawTrackingGraph() {
+            const canvas = document.getElementById('trackingCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(trackingOffsetX, trackingOffsetY);
+            ctx.scale(trackingScale, trackingScale);
+
+            if (!trackingData || !trackingData.graph) {
+                ctx.fillStyle = '#888';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Track a parcel to see its journey', canvas.width / 2, canvas.height / 2);
+                ctx.restore();
+                return;
+            }
+
+            const route = trackingData.route;
+            const routePath = route && route.valid ? route.path : [];
+
+            // Draw all edges (dimmed)
+            trackingData.graph.edges.forEach(edge => {
+                const from = trackingNodePositions[edge.from];
+                const to = trackingNodePositions[edge.to];
+                if (!from || !to) return;
+
+                const isOnRoute = routePath.length > 0 &&
+                    routePath.some((city, i) =>
+                        i < routePath.length - 1 &&
+                        ((city === edge.from && routePath[i + 1] === edge.to) ||
+                            (city === edge.to && routePath[i + 1] === edge.from))
+                    );
+
+                ctx.beginPath();
+                ctx.moveTo(from.x, from.y);
+                ctx.lineTo(to.x, to.y);
+
+                if (isOnRoute) {
+                    ctx.strokeStyle = '#ffc107';
+                    ctx.lineWidth = 4;
+                    ctx.setLineDash([]);
+                } else {
+                    ctx.strokeStyle = edge.blocked ? '#dc3545' : '#3d3d5c';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash(edge.blocked ? [5, 5] : []);
+                }
+                ctx.stroke();
+
+                // Draw weight label for route edges
+                if (isOnRoute) {
+                    const midX = (from.x + to.x) / 2;
+                    const midY = (from.y + to.y) / 2;
+                    ctx.fillStyle = '#ffc107';
+                    ctx.font = 'bold 12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(edge.weight + ' km', midX, midY - 10);
+                }
+            });
+
+            ctx.setLineDash([]);
+
+            // Draw nodes
+            trackingData.graph.cities.forEach(city => {
+                const pos = trackingNodePositions[city.name];
+                if (!pos) return;
+
+                const isOrigin = city.name === trackingData.origin;
+                const isDestination = city.name === trackingData.destination;
+                const isOnRoute = routePath.includes(city.name);
+
+                // Node circle
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, isOnRoute ? 28 : 20, 0, 2 * Math.PI);
+
+                if (isOrigin) {
+                    ctx.fillStyle = '#00d9a5';
+                } else if (isDestination) {
+                    ctx.fillStyle = '#e94560';
+                } else if (isOnRoute) {
+                    ctx.fillStyle = '#ffc107';
+                } else {
+                    ctx.fillStyle = '#4a5568';
+                }
+                ctx.fill();
+
+                ctx.strokeStyle = isOnRoute ? '#fff' : '#1a1a2e';
+                ctx.lineWidth = isOnRoute ? 3 : 2;
+                ctx.stroke();
+
+                // Node label
+                ctx.fillStyle = isOrigin || isDestination || isOnRoute ? '#1a1a2e' : '#fff';
+                ctx.font = isOnRoute ? 'bold 11px Arial' : '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(city.name, pos.x, pos.y);
+
+                // Origin/Destination markers
+                if (isOrigin) {
+                    ctx.fillStyle = '#00d9a5';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.fillText('🏭', pos.x, pos.y - 40);
+                    ctx.font = '10px Arial';
+                    ctx.fillText('ORIGIN', pos.x, pos.y + 40);
+                }
+                if (isDestination) {
+                    ctx.fillStyle = '#e94560';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.fillText('📍', pos.x, pos.y - 40);
+                    ctx.font = '10px Arial';
+                    ctx.fillText('DESTINATION', pos.x, pos.y + 40);
+                }
+            });
+
+            // Draw parcel icon at current position
+            if (routePath.length > 0 && parcelPosition) {
+                // Parcel shadow
+                ctx.beginPath();
+                ctx.arc(parcelPosition.x + 2, parcelPosition.y + 2, 18, 0, 2 * Math.PI);
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fill();
+
+                // Parcel body
+                ctx.beginPath();
+                ctx.arc(parcelPosition.x, parcelPosition.y, 18, 0, 2 * Math.PI);
+                const gradient = ctx.createRadialGradient(parcelPosition.x - 5, parcelPosition.y - 5, 0, parcelPosition.x, parcelPosition.y, 18);
+                gradient.addColorStop(0, '#4dd0e1');
+                gradient.addColorStop(1, '#17a2b8');
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Parcel icon
+                ctx.fillStyle = '#fff';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('📦', parcelPosition.x, parcelPosition.y);
+            }
+
+            ctx.restore();
+        }
+
+        function resetAnimation() {
+            stopAnimation();
+            animationProgress = 0;
+            currentSegment = 0;
+            segmentProgress = 0;
+
+            if (trackingData && trackingData.route && trackingData.route.valid) {
+                const startCity = trackingNodePositions[trackingData.route.path[0]];
+                if (startCity) {
+                    parcelPosition = { x: startCity.x, y: startCity.y };
+                }
+            }
+
+            updateProgressBar(0);
+            drawTrackingGraph();
+        }
+
+        function playAnimation() {
+            if (!trackingData || !trackingData.route || !trackingData.route.valid) {
+                showToast('Load a parcel route first', 'error');
+                return;
+            }
+
+            if (animationProgress >= 1) {
+                resetAnimation();
+            }
+
+            isPlaying = true;
+            animate();
+        }
+
+        function pauseAnimation() {
+            isPlaying = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+
+        function stopTracking() {
+            pauseAnimation();
+            resetAnimation();
+        }
+
+        function animate() {
+            if (!isPlaying || !trackingData || !trackingData.route || !trackingData.route.valid) return;
+
+            const route = trackingData.route.path;
+            if (route.length < 2) return;
+
+            const speedInput = document.getElementById('animationSpeed');
+            const speed = speedInput ? speedInput.value / 500 : 0.01;
+
+            segmentProgress += speed;
+
+            if (segmentProgress >= 1) {
+                segmentProgress = 0;
+                currentSegment++;
+
+                if (currentSegment >= route.length - 1) {
+                    // Animation complete
+                    currentSegment = route.length - 2;
+                    segmentProgress = 1;
+                    isPlaying = false;
+
+                    // Move to final position
+                    const endCity = trackingNodePositions[route[route.length - 1]];
+                    if (endCity) {
+                        parcelPosition = { x: endCity.x, y: endCity.y };
+                    }
+
+                    updateProgressBar(100);
+                    drawTrackingGraph();
+                    showToast('🎉 Parcel delivered!', 'success');
+                    return;
+                }
+            }
+
+            // Interpolate position between current and next city
+            const currentCity = trackingNodePositions[route[currentSegment]];
+            const nextCity = trackingNodePositions[route[currentSegment + 1]];
+
+            if (currentCity && nextCity) {
+                parcelPosition = {
+                    x: currentCity.x + (nextCity.x - currentCity.x) * segmentProgress,
+                    y: currentCity.y + (nextCity.y - currentCity.y) * segmentProgress
+                };
+            }
+
+            // Calculate overall progress
+            const totalSegments = route.length - 1;
+            const overallProgress = ((currentSegment + segmentProgress) / totalSegments) * 100;
+            updateProgressBar(overallProgress);
+
+            drawTrackingGraph();
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        function updateProgressBar(percent) {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            if (progressBar) progressBar.style.width = percent + '%';
+            if (progressText) progressText.textContent = Math.round(percent) + '%';
+        }
+
+        function resetTrackingView() {
+            trackingScale = 1;
+            trackingOffsetX = 0;
+            trackingOffsetY = 0;
+            if (trackingData) {
+                initTrackingPositions();
+            }
+            drawTrackingGraph();
+        }
+
+        function stopAnimation() {
+            isPlaying = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+
+        // Initialize tracking canvas on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            setupTrackingCanvas();
+        });
     </script>
 </body>
 

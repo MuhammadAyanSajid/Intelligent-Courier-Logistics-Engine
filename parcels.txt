@@ -1,1 +1,5 @@
-3|Karachi|46|3|Returned to Sender
+1|Islamabad|15|1|Picked Up
+2|Lahore|89|3|Delivered
+3|Karachi|46|3|Delivered
+4|Quetta|6|1|Delivered
+10|Karachi|12|1|Delivered

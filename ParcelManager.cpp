@@ -7,6 +7,17 @@ bool ParcelManager::parcelExists(int id)
     return parcelMap.contains(id);
 }
 
+bool ParcelManager::canReuseParcelId(int id)
+{
+    if (!parcelMap.contains(id))
+    {
+        return true; // ID doesn't exist, can use it
+    }
+    Parcel existing = parcelMap.get(id);
+    // Allow reuse if parcel is delivered or returned
+    return (existing.getStatus() == STATUS_DELIVERED || existing.getStatus() == STATUS_RETURNED);
+}
+
 void ParcelManager::addParcel(Parcel p)
 {
     // Check for duplicate ID

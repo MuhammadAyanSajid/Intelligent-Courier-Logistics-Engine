@@ -18,10 +18,11 @@ private:
 public:
     ParcelManager();
     void addParcel(Parcel p);
-    bool parcelExists(int id);   // Check if parcel ID already exists
-    void updateParcel(Parcel p); // Updates state in Map (and Heap if needed?)
-    Parcel dispatchNext();       // Returns the dispatched parcel for tracking
-    void removeParcel(int id);   // Remove parcel from map after dispatch
+    bool parcelExists(int id);     // Check if parcel ID already exists
+    bool canReuseParcelId(int id); // Check if parcel ID can be reused (delivered/returned)
+    void updateParcel(Parcel p);   // Updates state in Map (and Heap if needed?)
+    Parcel dispatchNext();         // Returns the dispatched parcel for tracking
+    void removeParcel(int id);     // Remove parcel from map after dispatch
     Parcel peekHighPriority();
     Parcel getParcel(int id);
     bool hasParcels();
