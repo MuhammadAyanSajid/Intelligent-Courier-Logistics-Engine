@@ -606,7 +606,10 @@ void WebServer::setupRiderEndpoints()
         }
         
         if (!ops.assignParcelToRider(parcelId, p.getWeight(), riderId)) {
-            res.set_content(errorResponse("Rider cannot take this parcel (capacity exceeded)"), "application/json");
+            Rider r = ops.getRider(riderId);
+            stringstream errMsg;
+            errMsg << "Rider cannot take this parcel. Parcel weight: " << p.getWeight() << "kg, Rider remaining capacity: " << r.getRemainingCapacity() << "kg";
+            res.set_content(errorResponse(errMsg.str()), "application/json");
             return;
         }
         
@@ -653,7 +656,9 @@ void WebServer::setupRiderEndpoints()
         
         Rider* best = ops.findBestRider(p.getWeight(), p.getZone());
         if (best == nullptr) {
-            res.set_content(errorResponse("No suitable rider available"), "application/json");
+            stringstream errMsg;
+            errMsg << "No rider available with enough capacity for parcel weight: " << p.getWeight() << "kg";
+            res.set_content(errorResponse(errMsg.str()), "application/json");
             return;
         }
         

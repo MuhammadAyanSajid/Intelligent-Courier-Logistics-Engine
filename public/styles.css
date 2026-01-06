@@ -292,7 +292,11 @@ tr:hover {
     border-radius: 8px;
     color: white;
     animation: slideIn 0.3s ease;
-    z-index: 1000;
+    z-index: 10000;
+    max-width: 400px;
+    word-wrap: break-word;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    font-weight: 500;
 }
 
 .toast.success {
@@ -302,6 +306,8 @@ tr:hover {
 
 .toast.error {
     background: #dc3545;
+    border: 2px solid #ff6b6b;
+    font-size: 14px;
 }
 
 .toast.info {

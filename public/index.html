@@ -390,28 +390,83 @@
             });
         }
 
-        // Toast notifications
+        // Toast notifications - track active toasts for stacking
+        let toastCount = 0;
         function showToast(message, type = 'info') {
+            // Handle undefined/null messages
+            if (!message || message === 'undefined') {
+                message = type === 'error' ? 'An error occurred' : 'Operation completed';
+            }
+            
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.textContent = message;
+            toast.style.bottom = (20 + toastCount * 70) + 'px';
+            
+            // Error toasts can be clicked to dismiss
+            if (type === 'error') {
+                toast.innerHTML = `<span>${message}</span><span style="margin-left:10px;cursor:pointer;font-weight:bold;">&times;</span>`;
+                toast.onclick = () => {
+                    toast.remove();
+                    toastCount--;
+                    updateToastPositions();
+                };
+            } else {
+                toast.textContent = message;
+            }
+            
             document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            toastCount++;
+            
+            const duration = type === 'error' ? 8000 : 4000; // Errors stay longer
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                    toastCount--;
+                    updateToastPositions();
+                }
+            }, duration);
+        }
+        
+        function updateToastPositions() {
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach((t, i) => {
+                t.style.bottom = (20 + i * 70) + 'px';
+            });
         }
 
-        // API Helpers
+        // API Helpers with error handling
         async function apiGet(endpoint) {
-            const res = await fetch(API + endpoint);
-            return res.json();
+            try {
+                const res = await fetch(API + endpoint);
+                const data = await res.json();
+                // Ensure message is always present
+                if (!data.message) {
+                    data.message = data.success ? 'Success' : 'Request failed';
+                }
+                return data;
+            } catch (err) {
+                console.error('API GET Error:', err);
+                return { success: false, message: 'Connection error: ' + (err.message || 'Unable to reach server') };
+            }
         }
 
         async function apiPost(endpoint, data = {}) {
-            const res = await fetch(API + endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            return res.json();
+            try {
+                const res = await fetch(API + endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                // Ensure message is always present
+                if (!result.message) {
+                    result.message = result.success ? 'Operation successful' : 'Operation failed';
+                }
+                return result;
+            } catch (err) {
+                console.error('API POST Error:', err);
+                return { success: false, message: 'Connection error: ' + (err.message || 'Unable to reach server') };
+            }
         }
 
         // Refresh all data
