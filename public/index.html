@@ -18,13 +18,12 @@
 
     <div class="container">
         <div class="sidebar">
-            <div class="nav-item active" data-section="dashboard">📊 Dashboard</div>
-            <div class="nav-item" data-section="parcels">📦 Parcels</div>
-            <div class="nav-item" data-section="tracking">🛤️ Track Parcel</div>
-            <div class="nav-item" data-section="queues">🔄 Queues</div>
-            <div class="nav-item" data-section="riders">🏍️ Riders</div>
-            <div class="nav-item" data-section="routes">🗺️ Route Finder</div>
-            <div class="nav-item" data-section="graph">🌐 Network Map</div>
+            <div class="nav-item active" data-section="dashboard"> Dashboard</div>
+            <div class="nav-item" data-section="parcels"> Parcels</div>
+            <div class="nav-item" data-section="queues"> Queues</div>
+            <div class="nav-item" data-section="riders"> Riders</div>
+            <div class="nav-item" data-section="routes"> Route Finder</div>
+            <div class="nav-item" data-section="graph"> Network Map</div>
         </div>
 
         <div class="main-content">
@@ -76,9 +75,8 @@
 
                 <div class="card">
                     <h2>Quick Actions</h2>
-                    <button class="btn btn-primary" onclick="dispatchNext()">Dispatch Next Parcel</button>
-                    <button class="btn btn-secondary" onclick="undoAction()">↩️ Undo Last Action</button>
-                    <button class="btn btn-secondary" onclick="refreshAll()">🔄 Refresh Data</button>
+                    <button class="btn btn-secondary" onclick="undoAction()"> Undo Last Action</button>
+                    <button class="btn btn-secondary" onclick="refreshAll()"> Refresh Data</button>
                 </div>
             </div>
 
@@ -134,72 +132,6 @@
                             <!-- Parcels loaded dynamically -->
                         </tbody>
                     </table>
-                </div>
-            </div>
-
-            <!-- Parcel Tracking Section -->
-            <div id="tracking" class="section">
-                <div class="card">
-                    <h2>🛤️ Track Parcel Journey</h2>
-                    <div class="inline-form">
-                        <div class="form-group">
-                            <label>Parcel ID</label>
-                            <input type="number" id="trackParcelId" min="1" placeholder="Enter parcel ID">
-                        </div>
-                        <button class="btn btn-primary" onclick="trackParcel()">Track Parcel</button>
-                        <button class="btn btn-secondary" onclick="stopTracking()">Stop Animation</button>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2>Parcel Information</h2>
-                    <div id="trackingInfo">
-                        <p style="color: #888;">Enter a parcel ID above to see its journey</p>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2>Live Route Visualization</h2>
-                    <div class="graph-controls">
-                        <button class="btn btn-secondary" onclick="resetTrackingView()">Reset View</button>
-                        <button class="btn btn-success" onclick="playAnimation()">▶ Play Journey</button>
-                        <button class="btn btn-warning" onclick="pauseAnimation()">⏸ Pause</button>
-                        <div class="form-group" style="display:inline-block; margin-left:20px;">
-                            <label>Speed</label>
-                            <input type="range" id="animationSpeed" min="1" max="10" value="5"
-                                style="width:100px; vertical-align:middle;">
-                        </div>
-                    </div>
-                    <canvas id="trackingCanvas" width="900" height="550"></canvas>
-                    <div id="journeyProgress" style="margin-top:15px;">
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <span>Journey Progress:</span>
-                            <div style="flex:1; height:8px; background:#2d2d44; border-radius:4px; overflow:hidden;">
-                                <div id="progressBar"
-                                    style="width:0%; height:100%; background:linear-gradient(90deg, #00d9a5, #17a2b8); transition:width 0.3s;">
-                                </div>
-                            </div>
-                            <span id="progressText">0%</span>
-                        </div>
-                    </div>
-                    <div class="legend" style="margin-top:15px;">
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #00d9a5;"></div>
-                            <span>Origin (Warehouse)</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #e94560;"></div>
-                            <span>Destination</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #ffc107;"></div>
-                            <span>Route Path</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #17a2b8;"></div>
-                            <span>📦 Parcel Position</span>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -354,11 +286,36 @@
                 <div class="card">
                     <h2>Network Map</h2>
                     <div class="graph-controls">
+                        <button class="btn btn-primary" onclick="dispatchAndAnimate()">🚚 Dispatch Next Parcel</button>
                         <button class="btn btn-secondary" onclick="resetGraphView()">Reset View</button>
                         <button class="btn btn-secondary" onclick="refreshGraph()">Refresh Data</button>
+                        <div class="form-group" style="display:inline-block; margin-left:20px;">
+                            <label>Speed</label>
+                            <input type="range" id="animationSpeed" min="1" max="10" value="5"
+                                style="width:100px; vertical-align:middle;">
+                        </div>
                         <span style="color: #888; margin-left: 20px;">Drag to move nodes • Scroll to zoom</span>
                     </div>
-                    <canvas id="graphCanvas" width="800" height="500"></canvas>
+                    <canvas id="graphCanvas" width="900" height="550"></canvas>
+                    <div id="dispatchInfo"
+                        style="margin-top:15px; padding:15px; background:#1a1a2e; border-radius:8px; display:none;">
+                        <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap;">
+                            <span>📦 Parcel <strong id="dispatchParcelId"></strong></span>
+                            <span>→ <strong id="dispatchDestination"></strong></span>
+                            <div style="flex:1; min-width:200px;">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span>Progress:</span>
+                                    <div
+                                        style="flex:1; height:8px; background:#2d2d44; border-radius:4px; overflow:hidden;">
+                                        <div id="dispatchProgressBar"
+                                            style="width:0%; height:100%; background:linear-gradient(90deg, #00d9a5, #17a2b8); transition:width 0.3s;">
+                                        </div>
+                                    </div>
+                                    <span id="dispatchProgressText">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="legend">
                         <div class="legend-item">
                             <div class="legend-color" style="background: #00d9a5;"></div>
@@ -379,6 +336,10 @@
                         <div class="legend-item">
                             <div class="legend-color" style="background: #dc3545;"></div>
                             <span>Blocked Road</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #17a2b8;"></div>
+                            <span>📦 Parcel in Transit</span>
                         </div>
                     </div>
                 </div>
@@ -522,11 +483,7 @@
                             <td><span class="status-badge ${getStatusClass(p.status)}">${p.status}</span></td>
                             <td>${p.assignedRiderID > 0 ? '#' + p.assignedRiderID : '-'}</td>
                             <td>
-                                ${p.status !== 'Delivered' && p.status !== 'Returned' ? `
-                                    <button class="btn btn-success btn-sm" onclick="deliverParcel(${p.parcelID})">✓</button>
-                                    <button class="btn btn-danger btn-sm" onclick="returnParcel(${p.parcelID})">↩</button>
-                                    <button class="btn btn-warning btn-sm" onclick="attemptDelivery(${p.parcelID})">⚠</button>
-                                ` : ''}
+                                ${getParcelActions(p)}
                             </td>
                         </tr>
                     `).join('');
@@ -534,6 +491,93 @@
             } catch (e) {
                 console.error('Parcels load error:', e);
             }
+        }
+
+        // Get appropriate action buttons based on parcel status - shows ONLY next required step
+        function getParcelActions(p) {
+            const status = p.status;
+            
+            // Completed states - no actions
+            if (status === 'Delivered') {
+                return '<span class="badge bg-success">✓ Complete</span>';
+            }
+            if (status.includes('Returned')) {
+                return '<span class="badge bg-secondary">↩ Returned</span>';
+            }
+            
+            // Flow Step 1: Created → Add to Pickup Queue
+            if (status === 'Created') {
+                return `<button class="btn btn-primary btn-sm" onclick="addParcelToPickup(${p.parcelID})">
+                    <i>→</i> Add to Pickup
+                </button>`;
+            }
+            
+            // Flow Step 2: Pending Pickup → Process via Queue Management
+            if (status === 'Pending Pickup') {
+                return '<span class="badge bg-warning text-dark">⏳ Awaiting Pickup</span>';
+            }
+            
+            // Flow Step 3: Picked Up → Add to Warehouse
+            if (status === 'Picked Up') {
+                return `<button class="btn btn-primary btn-sm" onclick="addParcelToWarehouse(${p.parcelID})">
+                    <i>→</i> To Warehouse
+                </button>`;
+            }
+            
+            // Flow Step 4: In Warehouse → Assign Rider
+            if (status === 'In Warehouse') {
+                return `<button class="btn btn-primary btn-sm" onclick="promptAssignRider(${p.parcelID})">
+                    <i>→</i> Assign Rider
+                </button>`;
+            }
+            
+            // Queued for Loading → Assign Rider
+            if (status === 'Queued for Loading') {
+                return `<button class="btn btn-primary btn-sm" onclick="promptAssignRider(${p.parcelID})">
+                    <i>→</i> Assign Rider
+                </button>`;
+            }
+            
+            // In Transit → Assign Rider (dispatch)
+            if (status === 'In Transit') {
+                return `<button class="btn btn-primary btn-sm" onclick="promptAssignRider(${p.parcelID})">
+                    <i>→</i> Dispatch
+                </button>`;
+            }
+            
+            // Flow Step 5: Out for Delivery → Complete Delivery (dropdown with all options)
+            if (status === 'Out for Delivery' || status === 'Delivery Attempted') {
+                return `<div class="btn-group btn-group-sm">
+                    <button class="btn btn-success" onclick="deliverParcel(${p.parcelID})" title="Mark Delivered">✓</button>
+                    <button class="btn btn-warning" onclick="attemptDelivery(${p.parcelID})" title="Failed Attempt">⚠</button>
+                    <button class="btn btn-danger" onclick="returnParcel(${p.parcelID})" title="Return">↩</button>
+                </div>`;
+            }
+            
+            return '<span style="color:#888;">-</span>';
+        }
+
+        // Helper functions for inline actions
+        async function addParcelToPickup(id) {
+            const res = await apiPost(`/api/queues/pickup/${id}`);
+            showToast(res.message, res.success ? 'success' : 'error');
+            refreshAll();
+        }
+
+        async function addParcelToWarehouse(id) {
+            const res = await apiPost(`/api/queues/warehouse/${id}`);
+            showToast(res.message, res.success ? 'success' : 'error');
+            refreshAll();
+        }
+
+        async function promptAssignRider(parcelId) {
+            document.getElementById('assignParcelId').value = parcelId;
+            // Switch to Riders tab
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelector('[data-section="riders"]').classList.add('active');
+            document.getElementById('riders').classList.add('active');
+            showToast('Enter Rider ID or use Auto-Assign', 'info');
         }
 
         function getStatusClass(status) {
@@ -911,329 +955,15 @@
                 return;
             }
 
+            const routePath = dispatchRoute && dispatchRoute.path ? dispatchRoute.path : [];
+
             // Draw edges
             graphData.edges.forEach(edge => {
                 const from = nodePositions[edge.from];
                 const to = nodePositions[edge.to];
                 if (!from || !to) return;
 
-                ctx.beginPath();
-                ctx.moveTo(from.x, from.y);
-                ctx.lineTo(to.x, to.y);
-                ctx.strokeStyle = edge.blocked ? '#dc3545' : '#4a5568';
-                ctx.lineWidth = edge.blocked ? 3 : 2;
-                if (edge.blocked) {
-                    ctx.setLineDash([5, 5]);
-                } else {
-                    ctx.setLineDash([]);
-                }
-                ctx.stroke();
-
-                // Draw weight label
-                const midX = (from.x + to.x) / 2;
-                const midY = (from.y + to.y) / 2;
-                ctx.fillStyle = '#888';
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(edge.weight + ' km', midX, midY - 5);
-            });
-
-            ctx.setLineDash([]);
-
-            // Draw nodes
-            graphData.cities.forEach(city => {
-                const pos = nodePositions[city.name];
-                if (!pos) return;
-
-                // Node circle
-                ctx.beginPath();
-                ctx.arc(pos.x, pos.y, 25, 0, 2 * Math.PI);
-                ctx.fillStyle = zoneColors[city.zone] || zoneColors.default;
-                ctx.fill();
-                ctx.strokeStyle = '#1a1a2e';
-                ctx.lineWidth = 3;
-                ctx.stroke();
-
-                // Node label
-                ctx.fillStyle = '#1a1a2e';
-                ctx.font = 'bold 10px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(city.name, pos.x, pos.y);
-            });
-
-            ctx.restore();
-        }
-
-        function resetGraphView() {
-            scale = 1;
-            offsetX = 0;
-            offsetY = 0;
-            initNodePositions();
-            drawGraph();
-        }
-
-        function refreshGraph() {
-            loadGraph();
-        }
-
-        // ============== PARCEL TRACKING VISUALIZATION ==============
-
-        // Tracking state
-        let trackingData = null;
-        let trackingNodePositions = {};
-        let trackingScale = 1;
-        let trackingOffsetX = 0, trackingOffsetY = 0;
-        let trackingDragging = null;
-        let trackingPanning = false;
-        let trackingLastMouse = { x: 0, y: 0 };
-        let animationId = null;
-        let animationProgress = 0;
-        let isPlaying = false;
-        let parcelPosition = { x: 0, y: 0 };
-        let currentSegment = 0;
-        let segmentProgress = 0;
-
-        // Initialize tracking canvas
-        function setupTrackingCanvas() {
-            const canvas = document.getElementById('trackingCanvas');
-            if (!canvas) return;
-
-            canvas.addEventListener('mousedown', (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const x = (e.clientX - rect.left - trackingOffsetX) / trackingScale;
-                const y = (e.clientY - rect.top - trackingOffsetY) / trackingScale;
-
-                for (const [name, pos] of Object.entries(trackingNodePositions)) {
-                    const dx = x - pos.x;
-                    const dy = y - pos.y;
-                    if (Math.sqrt(dx * dx + dy * dy) < 30) {
-                        trackingDragging = name;
-                        return;
-                    }
-                }
-
-                trackingPanning = true;
-                trackingLastMouse = { x: e.clientX, y: e.clientY };
-            });
-
-            canvas.addEventListener('mousemove', (e) => {
-                const rect = canvas.getBoundingClientRect();
-
-                if (trackingDragging) {
-                    trackingNodePositions[trackingDragging] = {
-                        x: (e.clientX - rect.left - trackingOffsetX) / trackingScale,
-                        y: (e.clientY - rect.top - trackingOffsetY) / trackingScale
-                    };
-                    drawTrackingGraph();
-                } else if (trackingPanning) {
-                    trackingOffsetX += e.clientX - trackingLastMouse.x;
-                    trackingOffsetY += e.clientY - trackingLastMouse.y;
-                    trackingLastMouse = { x: e.clientX, y: e.clientY };
-                    drawTrackingGraph();
-                }
-            });
-
-            canvas.addEventListener('mouseup', () => {
-                trackingDragging = null;
-                trackingPanning = false;
-            });
-
-            canvas.addEventListener('mouseleave', () => {
-                trackingDragging = null;
-                trackingPanning = false;
-            });
-
-            canvas.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                const delta = e.deltaY > 0 ? 0.9 : 1.1;
-                trackingScale *= delta;
-                trackingScale = Math.max(0.5, Math.min(3, trackingScale));
-                drawTrackingGraph();
-            });
-        }
-
-        // Track a parcel
-        async function trackParcel() {
-            const id = document.getElementById('trackParcelId').value;
-            if (!id) {
-                showToast('Enter a parcel ID', 'error');
-                return;
-            }
-
-            try {
-                // Get parcel route and graph data
-                const [routeRes, graphRes] = await Promise.all([
-                    apiGet(`/api/parcels/${id}/route`),
-                    apiGet('/api/graph')
-                ]);
-
-                if (!routeRes.success) {
-                    showToast(routeRes.message, 'error');
-                    return;
-                }
-
-                if (!graphRes.success) {
-                    showToast('Failed to load map data', 'error');
-                    return;
-                }
-
-                trackingData = {
-                    parcel: routeRes.data.parcel,
-                    origin: routeRes.data.origin,
-                    destination: routeRes.data.destination,
-                    route: routeRes.data.route,
-                    graph: graphRes.data
-                };
-
-                // Display parcel info
-                displayTrackingInfo(trackingData);
-
-                // Initialize tracking visualization
-                initTrackingPositions();
-                resetAnimation();
-                drawTrackingGraph();
-
-                showToast('Parcel route loaded! Click Play to animate', 'success');
-            } catch (e) {
-                console.error('Track parcel error:', e);
-                showToast('Error tracking parcel', 'error');
-            }
-        }
-
-        function displayTrackingInfo(data) {
-            const container = document.getElementById('trackingInfo');
-            const p = data.parcel;
-            const route = data.route;
-
-            let routeHtml = '';
-            if (route && route.valid) {
-                routeHtml = `
-                    <div style="margin-top:15px; padding:15px; background:#2d2d44; border-radius:8px;">
-                        <h4 style="margin:0 0 10px 0; color:#00d9a5;">📍 Route Details</h4>
-                        <div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px;">
-                            ${route.path.map((city, i) => `
-                                <span style="padding:5px 12px; background:${i === 0 ? '#00d9a5' : i === route.path.length - 1 ? '#e94560' : '#4a5568'}; border-radius:20px; font-weight:bold;">
-                                    ${city}
-                                </span>
-                                ${i < route.path.length - 1 ? '<span style="color:#ffc107;">→</span>' : ''}
-                            `).join('')}
-                        </div>
-                        <div style="margin-top:10px; color:#888;">
-                            Total Distance: <strong style="color:#17a2b8;">${route.totalCost} km</strong> | 
-                            Stops: <strong style="color:#17a2b8;">${route.path.length}</strong>
-                        </div>
-                    </div>
-                `;
-            } else {
-                routeHtml = '<p style="color:#e94560;">No valid route found for this parcel</p>';
-            }
-
-            container.innerHTML = `
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="number">#${p.parcelID}</div>
-                        <div class="label">Parcel ID</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="number">${data.origin}</div>
-                        <div class="label">Origin</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="number">${p.destination}</div>
-                        <div class="label">Destination</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="number"><span class="status-badge ${getStatusClass(p.status)}">${p.status}</span></div>
-                        <div class="label">Status</div>
-                    </div>
-                </div>
-                ${routeHtml}
-            `;
-        }
-
-        function initTrackingPositions() {
-            const canvas = document.getElementById('trackingCanvas');
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-
-            if (!trackingData || !trackingData.graph) return;
-
-            // Position route cities in a line for better visualization
-            const route = trackingData.route;
-            if (route && route.valid && route.path.length > 0) {
-                const pathCities = route.path;
-                const startX = 100;
-                const endX = canvas.width - 100;
-                const spacing = (endX - startX) / (pathCities.length - 1 || 1);
-
-                // Position route cities horizontally
-                pathCities.forEach((city, i) => {
-                    trackingNodePositions[city] = {
-                        x: startX + i * spacing,
-                        y: centerY
-                    };
-                });
-
-                // Position other cities in a circle below
-                const otherCities = trackingData.graph.cities.filter(c => !pathCities.includes(c.name));
-                const radius = 120;
-                otherCities.forEach((city, i) => {
-                    const angle = Math.PI * (i / (otherCities.length - 1 || 1));
-                    trackingNodePositions[city.name] = {
-                        x: centerX + radius * 1.5 * Math.cos(angle),
-                        y: centerY + 150 + radius * 0.5 * Math.sin(angle)
-                    };
-                });
-            } else {
-                // Default circular layout
-                const radius = Math.min(canvas.width, canvas.height) * 0.35;
-                trackingData.graph.cities.forEach((city, i) => {
-                    const angle = (2 * Math.PI * i) / trackingData.graph.cities.length - Math.PI / 2;
-                    trackingNodePositions[city.name] = {
-                        x: centerX + radius * Math.cos(angle),
-                        y: centerY + radius * Math.sin(angle)
-                    };
-                });
-            }
-
-            // Set initial parcel position
-            if (route && route.valid && route.path.length > 0) {
-                const startCity = trackingNodePositions[route.path[0]];
-                if (startCity) {
-                    parcelPosition = { x: startCity.x, y: startCity.y };
-                }
-            }
-        }
-
-        function drawTrackingGraph() {
-            const canvas = document.getElementById('trackingCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
-            ctx.translate(trackingOffsetX, trackingOffsetY);
-            ctx.scale(trackingScale, trackingScale);
-
-            if (!trackingData || !trackingData.graph) {
-                ctx.fillStyle = '#888';
-                ctx.font = '16px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('Track a parcel to see its journey', canvas.width / 2, canvas.height / 2);
-                ctx.restore();
-                return;
-            }
-
-            const route = trackingData.route;
-            const routePath = route && route.valid ? route.path : [];
-
-            // Draw all edges (dimmed)
-            trackingData.graph.edges.forEach(edge => {
-                const from = trackingNodePositions[edge.from];
-                const to = trackingNodePositions[edge.to];
-                if (!from || !to) return;
-
+                // Check if edge is on dispatch route
                 const isOnRoute = routePath.length > 0 &&
                     routePath.some((city, i) =>
                         i < routePath.length - 1 &&
@@ -1250,89 +980,87 @@
                     ctx.lineWidth = 4;
                     ctx.setLineDash([]);
                 } else {
-                    ctx.strokeStyle = edge.blocked ? '#dc3545' : '#3d3d5c';
-                    ctx.lineWidth = 1;
-                    ctx.setLineDash(edge.blocked ? [5, 5] : []);
+                    ctx.strokeStyle = edge.blocked ? '#dc3545' : '#4a5568';
+                    ctx.lineWidth = edge.blocked ? 3 : 2;
+                    if (edge.blocked) {
+                        ctx.setLineDash([5, 5]);
+                    } else {
+                        ctx.setLineDash([]);
+                    }
                 }
                 ctx.stroke();
 
-                // Draw weight label for route edges
-                if (isOnRoute) {
-                    const midX = (from.x + to.x) / 2;
-                    const midY = (from.y + to.y) / 2;
-                    ctx.fillStyle = '#ffc107';
-                    ctx.font = 'bold 12px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(edge.weight + ' km', midX, midY - 10);
-                }
+                // Draw weight label
+                const midX = (from.x + to.x) / 2;
+                const midY = (from.y + to.y) / 2;
+                ctx.fillStyle = isOnRoute ? '#ffc107' : '#888';
+                ctx.font = isOnRoute ? 'bold 12px Arial' : '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(edge.weight + ' km', midX, midY - 5);
             });
 
             ctx.setLineDash([]);
 
             // Draw nodes
-            trackingData.graph.cities.forEach(city => {
-                const pos = trackingNodePositions[city.name];
+            graphData.cities.forEach(city => {
+                const pos = nodePositions[city.name];
                 if (!pos) return;
 
-                const isOrigin = city.name === trackingData.origin;
-                const isDestination = city.name === trackingData.destination;
+                const isOrigin = dispatchRoute && city.name === dispatchOrigin;
+                const isDestination = dispatchRoute && city.name === dispatchDestination;
                 const isOnRoute = routePath.includes(city.name);
 
                 // Node circle
                 ctx.beginPath();
-                ctx.arc(pos.x, pos.y, isOnRoute ? 28 : 20, 0, 2 * Math.PI);
+                ctx.arc(pos.x, pos.y, isOnRoute ? 28 : 25, 0, 2 * Math.PI);
 
                 if (isOrigin) {
                     ctx.fillStyle = '#00d9a5';
                 } else if (isDestination) {
                     ctx.fillStyle = '#e94560';
-                } else if (isOnRoute) {
-                    ctx.fillStyle = '#ffc107';
                 } else {
-                    ctx.fillStyle = '#4a5568';
+                    ctx.fillStyle = zoneColors[city.zone] || zoneColors.default;
                 }
                 ctx.fill();
-
                 ctx.strokeStyle = isOnRoute ? '#fff' : '#1a1a2e';
-                ctx.lineWidth = isOnRoute ? 3 : 2;
+                ctx.lineWidth = isOnRoute ? 4 : 3;
                 ctx.stroke();
 
                 // Node label
-                ctx.fillStyle = isOrigin || isDestination || isOnRoute ? '#1a1a2e' : '#fff';
-                ctx.font = isOnRoute ? 'bold 11px Arial' : '10px Arial';
+                ctx.fillStyle = '#1a1a2e';
+                ctx.font = 'bold 10px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(city.name, pos.x, pos.y);
 
-                // Origin/Destination markers
+                // Origin/Destination markers during dispatch
                 if (isOrigin) {
                     ctx.fillStyle = '#00d9a5';
-                    ctx.font = 'bold 14px Arial';
+                    ctx.font = 'bold 16px Arial';
                     ctx.fillText('🏭', pos.x, pos.y - 40);
-                    ctx.font = '10px Arial';
-                    ctx.fillText('ORIGIN', pos.x, pos.y + 40);
                 }
                 if (isDestination) {
                     ctx.fillStyle = '#e94560';
-                    ctx.font = 'bold 14px Arial';
+                    ctx.font = 'bold 16px Arial';
                     ctx.fillText('📍', pos.x, pos.y - 40);
-                    ctx.font = '10px Arial';
-                    ctx.fillText('DESTINATION', pos.x, pos.y + 40);
                 }
             });
 
-            // Draw parcel icon at current position
-            if (routePath.length > 0 && parcelPosition) {
+            // Draw parcel icon during dispatch animation
+            if (dispatchRoute && dispatchParcelPosition) {
                 // Parcel shadow
                 ctx.beginPath();
-                ctx.arc(parcelPosition.x + 2, parcelPosition.y + 2, 18, 0, 2 * Math.PI);
+                ctx.arc(dispatchParcelPosition.x + 2, dispatchParcelPosition.y + 2, 18, 0, 2 * Math.PI);
                 ctx.fillStyle = 'rgba(0,0,0,0.3)';
                 ctx.fill();
 
                 // Parcel body
                 ctx.beginPath();
-                ctx.arc(parcelPosition.x, parcelPosition.y, 18, 0, 2 * Math.PI);
-                const gradient = ctx.createRadialGradient(parcelPosition.x - 5, parcelPosition.y - 5, 0, parcelPosition.x, parcelPosition.y, 18);
+                ctx.arc(dispatchParcelPosition.x, dispatchParcelPosition.y, 18, 0, 2 * Math.PI);
+                const gradient = ctx.createRadialGradient(
+                    dispatchParcelPosition.x - 5, dispatchParcelPosition.y - 5, 0,
+                    dispatchParcelPosition.x, dispatchParcelPosition.y, 18
+                );
                 gradient.addColorStop(0, '#4dd0e1');
                 gradient.addColorStop(1, '#17a2b8');
                 ctx.fillStyle = gradient;
@@ -1346,140 +1074,175 @@
                 ctx.font = '16px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText('📦', parcelPosition.x, parcelPosition.y);
+                ctx.fillText('📦', dispatchParcelPosition.x, dispatchParcelPosition.y);
             }
 
             ctx.restore();
         }
 
-        function resetAnimation() {
-            stopAnimation();
-            animationProgress = 0;
-            currentSegment = 0;
-            segmentProgress = 0;
-
-            if (trackingData && trackingData.route && trackingData.route.valid) {
-                const startCity = trackingNodePositions[trackingData.route.path[0]];
-                if (startCity) {
-                    parcelPosition = { x: startCity.x, y: startCity.y };
-                }
-            }
-
-            updateProgressBar(0);
-            drawTrackingGraph();
+        function resetGraphView() {
+            scale = 1;
+            offsetX = 0;
+            offsetY = 0;
+            initNodePositions();
+            drawGraph();
         }
 
-        function playAnimation() {
-            if (!trackingData || !trackingData.route || !trackingData.route.valid) {
-                showToast('Load a parcel route first', 'error');
+        function refreshGraph() {
+            loadGraph();
+        }
+
+        // ============== PARCEL DISPATCH ANIMATION ON NETWORK MAP ==============
+
+        // Animation state for Network Map
+        let dispatchAnimationId = null;
+        let dispatchIsPlaying = false;
+        let dispatchRoute = null;
+        let dispatchParcelInfo = null;
+        let dispatchParcelPosition = { x: 0, y: 0 };
+        let dispatchCurrentSegment = 0;
+        let dispatchSegmentProgress = 0;
+        let dispatchOrigin = '';
+        let dispatchDestination = '';
+
+        // Dispatch and animate parcel on Network Map
+        async function dispatchAndAnimate() {
+            const res = await apiPost('/api/parcels/dispatch');
+            if (res.success) {
+                showToast('Parcel dispatched!', 'success');
+
+                // Switch to Network Map tab
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                document.querySelector('[data-section="graph"]').classList.add('active');
+                document.getElementById('graph').classList.add('active');
+
+                // Set up animation data
+                if (res.data.routes && res.data.routes.length > 0) {
+                    dispatchRoute = res.data.routes[0];
+                    dispatchParcelInfo = res.data.parcel;
+                    dispatchOrigin = dispatchRoute.path[0];
+                    dispatchDestination = dispatchRoute.path[dispatchRoute.path.length - 1];
+
+                    // Show dispatch info
+                    const dispatchInfo = document.getElementById('dispatchInfo');
+                    dispatchInfo.style.display = 'block';
+                    document.getElementById('dispatchParcelId').textContent = '#' + dispatchParcelInfo.parcelID;
+                    document.getElementById('dispatchDestination').textContent = dispatchDestination;
+
+                    // Reset and start animation
+                    resetDispatchAnimation();
+                    await loadGraph(); // Refresh graph data
+                    startDispatchAnimation();
+                }
+
+                refreshAll();
+            } else {
+                showToast(res.message, 'error');
+            }
+        }
+
+        function resetDispatchAnimation() {
+            stopDispatchAnimation();
+            dispatchCurrentSegment = 0;
+            dispatchSegmentProgress = 0;
+            updateDispatchProgressBar(0);
+
+            if (dispatchRoute && dispatchRoute.path.length > 0) {
+                const startCity = nodePositions[dispatchRoute.path[0]];
+                if (startCity) {
+                    dispatchParcelPosition = { x: startCity.x, y: startCity.y };
+                }
+            }
+        }
+
+        function startDispatchAnimation() {
+            if (!dispatchRoute || !dispatchRoute.path || dispatchRoute.path.length < 2) {
+                showToast('No valid route for animation', 'error');
                 return;
             }
 
-            if (animationProgress >= 1) {
-                resetAnimation();
-            }
-
-            isPlaying = true;
-            animate();
+            dispatchIsPlaying = true;
+            animateDispatch();
         }
 
-        function pauseAnimation() {
-            isPlaying = false;
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-                animationId = null;
+        function stopDispatchAnimation() {
+            dispatchIsPlaying = false;
+            if (dispatchAnimationId) {
+                cancelAnimationFrame(dispatchAnimationId);
+                dispatchAnimationId = null;
             }
         }
 
-        function stopTracking() {
-            pauseAnimation();
-            resetAnimation();
-        }
+        function animateDispatch() {
+            if (!dispatchIsPlaying || !dispatchRoute || !dispatchRoute.path) return;
 
-        function animate() {
-            if (!isPlaying || !trackingData || !trackingData.route || !trackingData.route.valid) return;
-
-            const route = trackingData.route.path;
+            const route = dispatchRoute.path;
             if (route.length < 2) return;
 
             const speedInput = document.getElementById('animationSpeed');
             const speed = speedInput ? speedInput.value / 500 : 0.01;
 
-            segmentProgress += speed;
+            dispatchSegmentProgress += speed;
 
-            if (segmentProgress >= 1) {
-                segmentProgress = 0;
-                currentSegment++;
+            if (dispatchSegmentProgress >= 1) {
+                dispatchSegmentProgress = 0;
+                dispatchCurrentSegment++;
 
-                if (currentSegment >= route.length - 1) {
+                if (dispatchCurrentSegment >= route.length - 1) {
                     // Animation complete
-                    currentSegment = route.length - 2;
-                    segmentProgress = 1;
-                    isPlaying = false;
+                    dispatchCurrentSegment = route.length - 2;
+                    dispatchSegmentProgress = 1;
+                    dispatchIsPlaying = false;
 
                     // Move to final position
-                    const endCity = trackingNodePositions[route[route.length - 1]];
+                    const endCity = nodePositions[route[route.length - 1]];
                     if (endCity) {
-                        parcelPosition = { x: endCity.x, y: endCity.y };
+                        dispatchParcelPosition = { x: endCity.x, y: endCity.y };
                     }
 
-                    updateProgressBar(100);
-                    drawTrackingGraph();
-                    showToast('🎉 Parcel delivered!', 'success');
+                    updateDispatchProgressBar(100);
+                    drawGraph();
+                    showToast('🎉 Parcel #' + dispatchParcelInfo.parcelID + ' arrived at ' + dispatchDestination + '!', 'success');
+
+                    // Hide dispatch info after a delay
+                    setTimeout(() => {
+                        dispatchRoute = null;
+                        dispatchParcelInfo = null;
+                        document.getElementById('dispatchInfo').style.display = 'none';
+                        drawGraph();
+                    }, 3000);
                     return;
                 }
             }
 
             // Interpolate position between current and next city
-            const currentCity = trackingNodePositions[route[currentSegment]];
-            const nextCity = trackingNodePositions[route[currentSegment + 1]];
+            const currentCity = nodePositions[route[dispatchCurrentSegment]];
+            const nextCity = nodePositions[route[dispatchCurrentSegment + 1]];
 
             if (currentCity && nextCity) {
-                parcelPosition = {
-                    x: currentCity.x + (nextCity.x - currentCity.x) * segmentProgress,
-                    y: currentCity.y + (nextCity.y - currentCity.y) * segmentProgress
+                dispatchParcelPosition = {
+                    x: currentCity.x + (nextCity.x - currentCity.x) * dispatchSegmentProgress,
+                    y: currentCity.y + (nextCity.y - currentCity.y) * dispatchSegmentProgress
                 };
             }
 
             // Calculate overall progress
             const totalSegments = route.length - 1;
-            const overallProgress = ((currentSegment + segmentProgress) / totalSegments) * 100;
-            updateProgressBar(overallProgress);
+            const overallProgress = ((dispatchCurrentSegment + dispatchSegmentProgress) / totalSegments) * 100;
+            updateDispatchProgressBar(overallProgress);
 
-            drawTrackingGraph();
+            drawGraph();
 
-            animationId = requestAnimationFrame(animate);
+            dispatchAnimationId = requestAnimationFrame(animateDispatch);
         }
 
-        function updateProgressBar(percent) {
-            const progressBar = document.getElementById('progressBar');
-            const progressText = document.getElementById('progressText');
+        function updateDispatchProgressBar(percent) {
+            const progressBar = document.getElementById('dispatchProgressBar');
+            const progressText = document.getElementById('dispatchProgressText');
             if (progressBar) progressBar.style.width = percent + '%';
             if (progressText) progressText.textContent = Math.round(percent) + '%';
         }
-
-        function resetTrackingView() {
-            trackingScale = 1;
-            trackingOffsetX = 0;
-            trackingOffsetY = 0;
-            if (trackingData) {
-                initTrackingPositions();
-            }
-            drawTrackingGraph();
-        }
-
-        function stopAnimation() {
-            isPlaying = false;
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-                animationId = null;
-            }
-        }
-
-        // Initialize tracking canvas on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            setupTrackingCanvas();
-        });
     </script>
 </body>
 

@@ -207,6 +207,18 @@ void WebServer::setupParcelEndpoints()
             return;
         }
         
+        // Check if parcel has been assigned to a rider
+        if (p.getAssignedRiderID() <= 0) {
+            res.set_content(errorResponse("Parcel must be assigned to a rider before attempting delivery"), "application/json");
+            return;
+        }
+        
+        // Check if parcel is out for delivery
+        if (p.getStatus() != STATUS_OUT_FOR_DELIVERY && p.getStatus() != STATUS_DELIVERY_ATTEMPTED) {
+            res.set_content(errorResponse("Parcel must be 'Out for Delivery' to attempt delivery. Current: " + p.getStatus()), "application/json");
+            return;
+        }
+        
         if (!p.canAttemptDelivery()) {
             res.set_content(errorResponse("Cannot attempt delivery for this parcel"), "application/json");
             return;
@@ -245,6 +257,23 @@ void WebServer::setupParcelEndpoints()
         
         if (p.getStatus() == STATUS_DELIVERED) {
             res.set_content(errorResponse("Parcel is already delivered"), "application/json");
+            return;
+        }
+        
+        if (p.getStatus() == STATUS_RETURNED) {
+            res.set_content(errorResponse("Cannot deliver a returned parcel"), "application/json");
+            return;
+        }
+        
+        // Check if parcel has been assigned to a rider
+        if (p.getAssignedRiderID() <= 0) {
+            res.set_content(errorResponse("Parcel must be assigned to a rider before delivery"), "application/json");
+            return;
+        }
+        
+        // Check if parcel is out for delivery
+        if (p.getStatus() != STATUS_OUT_FOR_DELIVERY && p.getStatus() != STATUS_DELIVERY_ATTEMPTED) {
+            res.set_content(errorResponse("Parcel must be 'Out for Delivery' status. Current: " + p.getStatus()), "application/json");
             return;
         }
         
@@ -289,6 +318,18 @@ void WebServer::setupParcelEndpoints()
         
         if (p.getStatus() == STATUS_RETURNED) {
             res.set_content(errorResponse("Parcel is already marked for return"), "application/json");
+            return;
+        }
+        
+        // Check if parcel has been assigned to a rider
+        if (p.getAssignedRiderID() <= 0) {
+            res.set_content(errorResponse("Parcel must be assigned to a rider before returning"), "application/json");
+            return;
+        }
+        
+        // Check if parcel is out for delivery
+        if (p.getStatus() != STATUS_OUT_FOR_DELIVERY && p.getStatus() != STATUS_DELIVERY_ATTEMPTED) {
+            res.set_content(errorResponse("Parcel must be 'Out for Delivery' to return. Current: " + p.getStatus()), "application/json");
             return;
         }
         
@@ -343,7 +384,12 @@ void WebServer::setupQueueEndpoints()
         }
         
         if (p.getStatus() == STATUS_DELIVERED || p.getStatus() == STATUS_RETURNED) {
-            res.set_content(errorResponse("Cannot add this parcel to pickup queue"), "application/json");
+            res.set_content(errorResponse("Cannot add delivered/returned parcel to pickup queue"), "application/json");
+            return;
+        }
+        
+        if (p.getStatus() != STATUS_CREATED) {
+            res.set_content(errorResponse("Parcel must be in 'Created' status to add to pickup. Current: " + p.getStatus()), "application/json");
             return;
         }
         
@@ -408,7 +454,12 @@ void WebServer::setupQueueEndpoints()
         }
         
         if (p.getStatus() == STATUS_DELIVERED || p.getStatus() == STATUS_RETURNED) {
-            res.set_content(errorResponse("Cannot add this parcel to warehouse"), "application/json");
+            res.set_content(errorResponse("Cannot add delivered/returned parcel to warehouse"), "application/json");
+            return;
+        }
+        
+        if (p.getStatus() != STATUS_PICKED_UP) {
+            res.set_content(errorResponse("Parcel must be 'Picked Up' to add to warehouse. Current: " + p.getStatus()), "application/json");
             return;
         }
         
@@ -548,6 +599,12 @@ void WebServer::setupRiderEndpoints()
             return;
         }
         
+        // Check parcel status - must be in warehouse, queued for loading, or in transit
+        if (p.getStatus() != STATUS_IN_WAREHOUSE && p.getStatus() != STATUS_QUEUED_LOADING && p.getStatus() != STATUS_IN_TRANSIT) {
+            res.set_content(errorResponse("Parcel must be in warehouse or transit before assigning to rider. Current: " + p.getStatus()), "application/json");
+            return;
+        }
+        
         if (!ops.assignParcelToRider(parcelId, p.getWeight(), riderId)) {
             res.set_content(errorResponse("Rider cannot take this parcel (capacity exceeded)"), "application/json");
             return;
@@ -585,6 +642,12 @@ void WebServer::setupRiderEndpoints()
         
         if (p.getAssignedRiderID() > 0) {
             res.set_content(errorResponse("Parcel already assigned to a rider"), "application/json");
+            return;
+        }
+        
+        // Check parcel status - must be in warehouse, queued for loading, or in transit
+        if (p.getStatus() != STATUS_IN_WAREHOUSE && p.getStatus() != STATUS_QUEUED_LOADING && p.getStatus() != STATUS_IN_TRANSIT) {
+            res.set_content(errorResponse("Parcel must be in warehouse or transit before assigning to rider. Current: " + p.getStatus()), "application/json");
             return;
         }
         
