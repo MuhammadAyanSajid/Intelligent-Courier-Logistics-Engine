@@ -862,6 +862,178 @@ void WebServer::setupRouteEndpoints()
         cityMap.unblockRoad(from, to, weight);
         cityMap.saveGraph("map_data.txt");
         res.set_content(successResponse("Road unblocked"), "application/json"); });
+
+    // POST /api/cities - Add a new city
+    server.Post("/api/cities", [this](const httplib::Request &req, httplib::Response &res)
+                {
+        res.set_header("Content-Type", "application/json");
+        res.set_header("Access-Control-Allow-Origin", "*");
+        
+        string name = getJsonValue(req.body, "name");
+        string zone = getJsonValue(req.body, "zone");
+        
+        // Validation: empty name
+        if (name.empty()) {
+            res.status = 400;
+            res.set_content(errorResponse("City name is required"), "application/json");
+            return;
+        }
+        
+        // Validation: name too short
+        if (name.length() < 2) {
+            res.status = 400;
+            res.set_content(errorResponse("City name must be at least 2 characters"), "application/json");
+            return;
+        }
+        
+        // Validation: name too long
+        if (name.length() > 50) {
+            res.status = 400;
+            res.set_content(errorResponse("City name must be 50 characters or less"), "application/json");
+            return;
+        }
+        
+        // Validation: no special characters (allow spaces, letters, numbers only)
+        for (char c : name) {
+            if (!isalnum(c) && c != ' ' && c != '-') {
+                res.status = 400;
+                res.set_content(errorResponse("City name can only contain letters, numbers, spaces, and hyphens"), "application/json");
+                return;
+            }
+        }
+        
+        // Validation: duplicate city
+        if (cityMap.cityExists(name)) {
+            res.status = 400;
+            res.set_content(errorResponse("City '" + name + "' already exists"), "application/json");
+            return;
+        }
+        
+        // Add the city
+        cityMap.addLocation(name);
+        
+        // Assign to zone if provided, otherwise create new zone or use default
+        if (!zone.empty()) {
+            cityMap.addZone(zone);
+            cityMap.assignCityToZone(name, zone);
+        } else {
+            // Auto-assign to a new zone based on city name
+            cityMap.addZone(name);
+            cityMap.assignCityToZone(name, name);
+        }
+        
+        cityMap.saveGraph("map_data.txt");
+        
+        stringstream data;
+        data << "{\"name\":\"" << escapeJson(name) << "\",\"zone\":\"" << escapeJson(zone.empty() ? name : zone) << "\"}";
+        res.set_content(successResponse("City '" + name + "' added successfully", data.str()), "application/json"); });
+
+    // POST /api/roads - Add a new road between cities
+    server.Post("/api/roads", [this](const httplib::Request &req, httplib::Response &res)
+                {
+        res.set_header("Content-Type", "application/json");
+        res.set_header("Access-Control-Allow-Origin", "*");
+        
+        string from = getJsonValue(req.body, "from");
+        string to = getJsonValue(req.body, "to");
+        int weight = getJsonInt(req.body, "weight", 0);
+        
+        // Validation: empty cities
+        if (from.empty() || to.empty()) {
+            res.status = 400;
+            res.set_content(errorResponse("Both 'from' and 'to' cities are required"), "application/json");
+            return;
+        }
+        
+        // Validation: same city
+        if (from == to) {
+            res.status = 400;
+            res.set_content(errorResponse("Cannot create a road from a city to itself"), "application/json");
+            return;
+        }
+        
+        // Validation: invalid weight
+        if (weight <= 0) {
+            res.status = 400;
+            res.set_content(errorResponse("Road weight must be a positive number"), "application/json");
+            return;
+        }
+        
+        // Validation: weight too large
+        if (weight > 10000) {
+            res.status = 400;
+            res.set_content(errorResponse("Road weight cannot exceed 10000"), "application/json");
+            return;
+        }
+        
+        // Validation: cities exist
+        if (!cityMap.cityExists(from)) {
+            res.status = 404;
+            res.set_content(errorResponse("City '" + from + "' does not exist"), "application/json");
+            return;
+        }
+        
+        if (!cityMap.cityExists(to)) {
+            res.status = 404;
+            res.set_content(errorResponse("City '" + to + "' does not exist"), "application/json");
+            return;
+        }
+        
+        // Check if road already exists
+        int existingWeight = cityMap.getRoadWeight(from, to);
+        string message;
+        if (existingWeight > 0) {
+            message = "Road updated from " + to_string(existingWeight) + "km to " + to_string(weight) + "km";
+        } else {
+            message = "Road added between " + from + " and " + to + " (" + to_string(weight) + "km)";
+        }
+        
+        // Add/update the road
+        cityMap.addRoute(from, to, weight);
+        cityMap.saveGraph("map_data.txt");
+        
+        stringstream data;
+        data << "{\"from\":\"" << escapeJson(from) << "\",\"to\":\"" << escapeJson(to) << "\",\"weight\":" << weight << "}";
+        res.set_content(successResponse(message, data.str()), "application/json"); });
+
+    // DELETE /api/cities/:name - Remove a city (with validation)
+    server.Delete(R"(/api/cities/(.+))", [this](const httplib::Request &req, httplib::Response &res)
+                  {
+        res.set_header("Content-Type", "application/json");
+        res.set_header("Access-Control-Allow-Origin", "*");
+        
+        string name = req.matches[1];
+        
+        // Validation: city exists
+        if (!cityMap.cityExists(name)) {
+            res.status = 404;
+            res.set_content(errorResponse("City '" + name + "' does not exist"), "application/json");
+            return;
+        }
+        
+        // Validation: check if any parcels have this city as destination
+        CustomVector<Parcel> allParcels = pm.getAllParcels();
+        for (int i = 0; i < allParcels.getSize(); i++) {
+            if (allParcels[i].getDestination() == name && 
+                allParcels[i].getStatus() != STATUS_DELIVERED && 
+                !allParcels[i].getStatus().find("Returned") != string::npos) {
+                res.status = 400;
+                res.set_content(errorResponse("Cannot delete city with active parcels destined there"), "application/json");
+                return;
+            }
+        }
+        
+        // Validation: check if it's the warehouse city
+        if (name == warehouseCity) {
+            res.status = 400;
+            res.set_content(errorResponse("Cannot delete the warehouse city"), "application/json");
+            return;
+        }
+        
+        // Note: Full deletion would require Graph modifications
+        // For now, we'll just return an error that this feature needs implementation
+        res.status = 501;
+        res.set_content(errorResponse("City deletion not yet implemented - cities can only be added"), "application/json"); });
 }
 
 void WebServer::setupSystemEndpoints()

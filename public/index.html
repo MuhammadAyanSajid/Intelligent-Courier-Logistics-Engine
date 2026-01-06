@@ -227,6 +227,44 @@
             <!-- Routes Section -->
             <div id="routes" class="section">
                 <div class="card">
+                    <h2>Add New City</h2>
+                    <div class="inline-form">
+                        <div class="form-group">
+                            <label>City Name</label>
+                            <input type="text" id="newCityName" placeholder="e.g. Multan" maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label>Zone (optional)</label>
+                            <input type="text" id="newCityZone" placeholder="e.g. South">
+                        </div>
+                        <button class="btn btn-primary" onclick="addCity()">Add City</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Add/Update Road</h2>
+                    <div class="inline-form">
+                        <div class="form-group">
+                            <label>From City</label>
+                            <select id="newRoadFrom">
+                                <!-- Cities loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>To City</label>
+                            <select id="newRoadTo">
+                                <!-- Cities loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Distance (km)</label>
+                            <input type="number" id="newRoadWeight" min="1" max="10000" value="100">
+                        </div>
+                        <button class="btn btn-primary" onclick="addRoad()">Add Road</button>
+                    </div>
+                </div>
+
+                <div class="card">
                     <h2>Find Routes</h2>
                     <div class="inline-form">
                         <div class="form-group">
@@ -507,10 +545,12 @@
                 const res = await apiGet('/api/cities');
                 if (res.success) {
                     cities = res.data;
-                    const selects = ['parcelDest', 'routeFrom', 'routeTo', 'roadFrom', 'roadTo'];
+                    const selects = ['parcelDest', 'routeFrom', 'routeTo', 'roadFrom', 'roadTo', 'newRoadFrom', 'newRoadTo'];
                     selects.forEach(id => {
                         const select = document.getElementById(id);
-                        select.innerHTML = cities.map(c => `<option value="${c}">${c}</option>`).join('');
+                        if (select) {
+                            select.innerHTML = cities.map(c => `<option value="${c}">${c}</option>`).join('');
+                        }
                     });
                 }
             } catch (e) {
@@ -878,6 +918,53 @@
                     <div>Total Distance: <strong>${r.totalCost}</strong> km</div>
                 </div>
             `).join('');
+        }
+
+        // Add new city
+        async function addCity() {
+            const name = document.getElementById('newCityName').value.trim();
+            const zone = document.getElementById('newCityZone').value.trim();
+            
+            if (!name) {
+                return showToast('Please enter a city name', 'error');
+            }
+            
+            const res = await apiPost('/api/cities', { name, zone });
+            showToast(res.message, res.success ? 'success' : 'error');
+            
+            if (res.success) {
+                document.getElementById('newCityName').value = '';
+                document.getElementById('newCityZone').value = '';
+                await loadCities(); // Refresh all city dropdowns
+                await loadGraph();  // Refresh the map
+            }
+        }
+
+        // Add new road between cities
+        async function addRoad() {
+            const from = document.getElementById('newRoadFrom').value;
+            const to = document.getElementById('newRoadTo').value;
+            const weight = parseInt(document.getElementById('newRoadWeight').value);
+            
+            if (!from || !to) {
+                return showToast('Please select both cities', 'error');
+            }
+            
+            if (from === to) {
+                return showToast('Cannot create a road from a city to itself', 'error');
+            }
+            
+            if (!weight || weight <= 0) {
+                return showToast('Please enter a valid distance', 'error');
+            }
+            
+            const res = await apiPost('/api/roads', { from, to, weight });
+            showToast(res.message, res.success ? 'success' : 'error');
+            
+            if (res.success) {
+                document.getElementById('newRoadWeight').value = '100';
+                await loadGraph(); // Refresh the map
+            }
         }
 
         async function blockRoad() {
