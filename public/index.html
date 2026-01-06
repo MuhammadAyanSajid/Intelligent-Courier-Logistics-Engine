@@ -10,7 +10,7 @@
 
 <body>
     <div class="header">
-        <h1>🚚 Courier Logistics System</h1>
+        <h1>Courier Logistics System</h1>
         <div class="status-badge">
             <span id="systemStatus">Connected</span>
         </div>
@@ -141,21 +141,21 @@
                     <h2>Queue Management</h2>
                     <div class="queue-status">
                         <div class="queue-card">
-                            <h3>📥 Pickup Queue</h3>
+                            <h3>Pickup Queue</h3>
                             <p>Size: <strong id="pickupSize">0</strong></p>
                             <p id="pickupNext" class="hidden">Next: <strong></strong></p>
                             <button class="btn btn-primary" onclick="processPickup()">Process Next Pickup</button>
                         </div>
 
                         <div class="queue-card">
-                            <h3>🏭 Warehouse Stack</h3>
+                            <h3>Warehouse Stack</h3>
                             <p>Size: <strong id="warehouseSize">0</strong></p>
                             <p id="warehouseNext" class="hidden">Next: <strong></strong></p>
                             <button class="btn btn-primary" onclick="loadFromWarehouse()">Load from Warehouse</button>
                         </div>
 
                         <div class="queue-card">
-                            <h3>🚚 Transit Queue</h3>
+                            <h3>Transit Queue</h3>
                             <p>Size: <strong id="transitSize">0</strong></p>
                             <p id="transitNext" class="hidden">Next: <strong></strong></p>
                             <button class="btn btn-primary" onclick="completeTransit()">Complete Transit</button>
@@ -286,7 +286,7 @@
                 <div class="card">
                     <h2>Network Map</h2>
                     <div class="graph-controls">
-                        <button class="btn btn-primary" onclick="dispatchAndAnimate()">🚚 Dispatch Next Parcel</button>
+                        <button class="btn btn-primary" onclick="dispatchAndAnimate()">Dispatch Next Parcel</button>
                         <button class="btn btn-secondary" onclick="resetGraphView()">Reset View</button>
                         <button class="btn btn-secondary" onclick="refreshGraph()">Refresh Data</button>
                         <div class="form-group" style="display:inline-block; margin-left:20px;">
@@ -300,8 +300,8 @@
                     <div id="dispatchInfo"
                         style="margin-top:15px; padding:15px; background:#1a1a2e; border-radius:8px; display:none;">
                         <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap;">
-                            <span>📦 Parcel <strong id="dispatchParcelId"></strong></span>
-                            <span>→ <strong id="dispatchDestination"></strong></span>
+                            <span>Parcel <strong id="dispatchParcelId"></strong></span>
+                            <span>to <strong id="dispatchDestination"></strong></span>
                             <div style="flex:1; min-width:200px;">
                                 <div style="display:flex; align-items:center; gap:10px;">
                                     <span>Progress:</span>
@@ -339,7 +339,7 @@
                         </div>
                         <div class="legend-item">
                             <div class="legend-color" style="background: #17a2b8;"></div>
-                            <span>📦 Parcel in Transit</span>
+                            <span>Parcel in Transit</span>
                         </div>
                     </div>
                 </div>
@@ -554,58 +554,58 @@
             
             // Completed states - no actions
             if (status === 'Delivered') {
-                return '<span class="badge bg-success">✓ Complete</span>';
+                return '<span class="badge bg-success">Complete</span>';
             }
             if (status.includes('Returned')) {
-                return '<span class="badge bg-secondary">↩ Returned</span>';
+                return '<span class="badge bg-secondary">Returned</span>';
             }
             
-            // Flow Step 1: Created → Add to Pickup Queue
+            // Flow Step 1: Created - Add to Pickup Queue
             if (status === 'Created') {
                 return `<button class="btn btn-primary btn-sm" onclick="addParcelToPickup(${p.parcelID})">
-                    <i>→</i> Add to Pickup
+                    Add to Pickup
                 </button>`;
             }
             
-            // Flow Step 2: Pending Pickup → Process via Queue Management
+            // Flow Step 2: Pending Pickup - Process via Queue Management
             if (status === 'Pending Pickup') {
-                return '<span class="badge bg-warning text-dark">⏳ Awaiting Pickup</span>';
+                return '<span class="badge bg-warning text-dark">Awaiting Pickup</span>';
             }
             
-            // Flow Step 3: Picked Up → Add to Warehouse
+            // Flow Step 3: Picked Up - Add to Warehouse
             if (status === 'Picked Up') {
                 return `<button class="btn btn-primary btn-sm" onclick="addParcelToWarehouse(${p.parcelID})">
-                    <i>→</i> To Warehouse
+                    To Warehouse
                 </button>`;
             }
             
-            // Flow Step 4: In Warehouse → Assign Rider
+            // Flow Step 4: In Warehouse - Assign Rider
             if (status === 'In Warehouse') {
                 return `<button class="btn btn-primary btn-sm" onclick="promptAssignRider(${p.parcelID})">
-                    <i>→</i> Assign Rider
+                    Assign Rider
                 </button>`;
             }
             
-            // Queued for Loading → Assign Rider
+            // Queued for Loading - Assign Rider
             if (status === 'Queued for Loading') {
                 return `<button class="btn btn-primary btn-sm" onclick="promptAssignRider(${p.parcelID})">
-                    <i>→</i> Assign Rider
+                    Assign Rider
                 </button>`;
             }
             
-            // In Transit → Assign Rider (dispatch)
+            // In Transit - Assign Rider (dispatch)
             if (status === 'In Transit') {
                 return `<button class="btn btn-primary btn-sm" onclick="promptAssignRider(${p.parcelID})">
-                    <i>→</i> Dispatch
+                    Dispatch
                 </button>`;
             }
             
-            // Flow Step 5: Out for Delivery → Complete Delivery (dropdown with all options)
+            // Flow Step 5: Out for Delivery - Complete Delivery (dropdown with all options)
             if (status === 'Out for Delivery' || status === 'Delivery Attempted') {
                 return `<div class="btn-group btn-group-sm">
-                    <button class="btn btn-success" onclick="deliverParcel(${p.parcelID})" title="Mark Delivered">✓</button>
-                    <button class="btn btn-warning" onclick="attemptDelivery(${p.parcelID})" title="Failed Attempt">⚠</button>
-                    <button class="btn btn-danger" onclick="returnParcel(${p.parcelID})" title="Return">↩</button>
+                    <button class="btn btn-success" onclick="deliverParcel(${p.parcelID})" title="Mark Delivered">Done</button>
+                    <button class="btn btn-warning" onclick="attemptDelivery(${p.parcelID})" title="Failed Attempt">Fail</button>
+                    <button class="btn btn-danger" onclick="returnParcel(${p.parcelID})" title="Return">Return</button>
                 </div>`;
             }
             
