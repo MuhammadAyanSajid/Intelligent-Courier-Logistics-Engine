@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwiftEx Courier System</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <div class="login-header">
+                <i class="fas fa-shipping-fast"></i>
+                <h1>SwiftEx Courier System</h1>
+                <p>Intelligent Logistics Management</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user"></i> Username
+                    </label>
+                    <input type="text" id="username" name="username" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i> Password
+                    </label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <div id="loginError" class="error-message"></div>
+            </form>
+        </div>
+    </div>
+
+    
+    <div id="dashboardScreen" class="screen">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i class="fas fa-shipping-fast"></i>
+                <span>SwiftEx</span>
+            </div>
+            <div class="nav-user">
+                <span id="userInfo"><i class="fas fa-user-circle"></i> User</span>
+                <button id="logoutBtn" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </nav>
+
+        <div class="dashboard-container">
+            
+            <aside class="sidebar">
+                <ul class="menu">
+                    <li class="menu-item active" data-section="overview">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Overview</span>
+                    </li>
+                    <li class="menu-item" data-section="parcels">
+                        <i class="fas fa-box"></i>
+                        <span>Parcels</span>
+                    </li>
+                    <li class="menu-item" data-section="tracking">
+                        <i class="fas fa-search-location"></i>
+                        <span>Tracking</span>
+                    </li>
+                    <li class="menu-item" data-section="routing">
+                        <i class="fas fa-route"></i>
+                        <span>Routing</span>
+                    </li>
+                    <li class="menu-item" data-section="riders">
+                        <i class="fas fa-motorcycle"></i>
+                        <span>Riders</span>
+                    </li>
+                    <li class="menu-item" data-section="cities">
+                        <i class="fas fa-city"></i>
+                        <span>Cities & Routes</span>
+                    </li>
+                    <li class="menu-item" data-section="operations">
+                        <i class="fas fa-tasks"></i>
+                        <span>Operations</span>
+                    </li>
+                    <li class="menu-item" data-section="reports">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Reports</span>
+                    </li>
+                </ul>
+            </aside>
+
+            
+            <main class="main-content">
+                
+                <section id="overviewSection" class="content-section active">
+                    <div class="section-header">
+                        <h2><i class="fas fa-chart-line"></i> System Overview</h2>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalParcels">0</h3>
+                                <p>Total Parcels</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="deliveredParcels">0</h3>
+                                <p>Delivered</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="inTransitParcels">0</h3>
+                                <p>In Transit</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple">
+                                <i class="fas fa-motorcycle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalRiders">0</h3>
+                                <p>Active Riders</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="charts-container">
+                        <div class="chart-card">
+                            <h3>Queue Status</h3>
+                            <div id="queueStatus" class="queue-info">
+                                <div class="queue-item">
+                                    <span class="queue-label">Pickup Queue:</span>
+                                    <span id="pickupQueue" class="queue-value">0</span>
+                                </div>
+                                <div class="queue-item">
+                                    <span class="queue-label">Warehouse Queue:</span>
+                                    <span id="warehouseQueue" class="queue-value">0</span>
+                                </div>
+                                <div class="queue-item">
+                                    <span class="queue-label">Transit Queue:</span>
+                                    <span id="transitQueue" class="queue-value">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Recent Activity</h3>
+                            <div id="recentActivity" class="activity-list">
+                                <p class="text-muted">No recent activity</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                
+                <section id="parcelsSection" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-box"></i> Parcel Management</h2>
+                        <button class="btn btn-primary" id="addParcelBtn">
+                            <i class="fas fa-plus"></i> Add Parcel
+                        </button>
+                    </div>
+                    
+                    <div class="filters">
+                        <input type="text" id="parcelSearch" placeholder="Search by tracking ID, sender, or receiver..." class="search-input">
+                        <select title="Filter parcels by status" id="statusFilter" class="filter-select">
+                            <option value="">All Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="PickedUp">Picked Up</option>
+                            <option value="InWarehouse">In Warehouse</option>
+                            <option value="InTransit">In Transit</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Returned">Returned</option>
+                            <option value="Missing">Missing</option>
+                        </select>
+                    </div>
+
+                    <div id="parcelsTable" class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tracking ID</th>
+                                    <th>Sender</th>
+                                    <th>Receiver</th>
+                                    <th>Priority</th>
+                                    <th>Weight (kg)</th>
+                                    <th>Status</th>
+                                    <th>Route</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="parcelsTableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">No parcels found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                
+                <section id="trackingSection" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-search-location"></i> Parcel Tracking</h2>
+                    </div>
+                    
+                    <div class="tracking-search">
+                        <input type="number" id="trackingIdInput" placeholder="Enter Tracking ID" class="tracking-input">
+                        <button id="trackParcelBtn" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Track
+                        </button>
+                    </div>
+
+                    <div id="trackingResult" class="tracking-result"></div>
+                </section>
+
+                
+                <section id="routingSection" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-route"></i> Routing & Navigation</h2>
+                    </div>
+                    
+                    <div class="route-calculator">
+                        <h3>Calculate Route</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Source City:</label>
+                                <select title="Select source city" id="routeSourceCity" class="form-control"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Destination City:</label>
+                                <select  title="Select destination city" id="routeDestCity" class="form-control"></select>
+                            </div>
+                            <button id="calculateRouteBtn" class="btn btn-primary">
+                                <i class="fas fa-calculator"></i> Calculate
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="routeResult" class="route-result"></div>
+                    
+                    <div class="route-management">
+                        <h3>Route Management</h3>
+                        <div class="action-buttons">
+                            <button id="blockRouteBtn" class="btn btn-warning">
+                                <i class="fas fa-ban"></i> Block Route
+                            </button>
+                            <button id="viewBlockedRoutesBtn" class="btn btn-secondary">
+                                <i class="fas fa-list"></i> View Blocked Routes
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                
+                <section id="ridersSection" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-motorcycle"></i> Rider Management</h2>
+                        <button class="btn btn-primary" id="addRiderBtn">
+                            <i class="fas fa-plus"></i> Add Rider
+                        </button>
+                    </div>
+                    
+                    <div id="ridersTable" class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Rider ID</th>
+                                    <th>Name</th>
+                                    <th>Capacity</th>
+                                    <th>Current Load</th>
+                                    <th>Location</th>
+                                    <th>Assigned Parcels</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ridersTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">No riders found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                
+                <section id="citiesSection" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-city"></i> Cities & Routes</h2>
+                    </div>
+                    
+                    <div class="cities-routes-grid">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>Cities</h3>
+                                <button class="btn btn-sm btn-primary" id="addCityBtn">
+                                    <i class="fas fa-plus"></i> Add City
+                                </button>
+                            </div>
+                            <div id="citiesList" class="list-container"></div>
+                        </div>
+                        
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>Routes</h3>
+                                <button class="btn btn-sm btn-primary" id="addRouteBtn">
+                                    <i class="fas fa-plus"></i> Add Route
+                                </button>
+                            </div>
+                            <div id="routesList" class="list-container"></div>
+                        </div>
+                    </div>
+                </section>
+
+                
+                <section id="operationsSection" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-tasks"></i> Operations</h2>
+                    </div>
+                    
+                    <div class="operations-grid">
+                        <div class="operation-card">
+                            <h3><i class="fas fa-hand-paper"></i> Pickup Operations</h3>
+                            <p>Process parcels from pickup queue</p>
+                            <button class="btn btn-primary" id="pickupParcelBtn">Execute Pickup</button>
+                        </div>
+                        
+                        <div class="operation-card">
+                            <h3><i class="fas fa-warehouse"></i> Warehouse Operations</h3>
+                            <p>Move parcels to transit</p>
+                            <button class="btn btn-primary" id="moveToTransitBtn">Move to Transit</button>
+                        </div>
+                        
+                        <div class="operation-card">
+                            <h3><i class="fas fa-truck"></i> Delivery Operations</h3>
+                            <p>Complete parcel delivery</p>
+                            <button class="btn btn-primary" id="deliverParcelBtn">Deliver Parcel</button>
+                        </div>
+                        
+                        <div class="operation-card">
+                            <h3><i class="fas fa-user-plus"></i> Assign Rider</h3>
+                            <p>Assign parcel to rider</p>
+                            <button class="btn btn-primary" id="assignRiderBtn">Assign</button>
+                        </div>
+                    </div>
+                </section>
+
+                
+                <section id="reportsSection" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-file-alt"></i> Reports & Statistics</h2>
+                    </div>
+                    
+                    <div class="reports-grid">
+                        <div class="report-card">
+                            <h3>Parcel Statistics</h3>
+                            <button class="btn btn-secondary" id="viewParcelStatsBtn">
+                                <i class="fas fa-chart-bar"></i> View Statistics
+                            </button>
+                        </div>
+                        
+                        <div class="report-card">
+                            <h3>Rider Performance</h3>
+                            <button class="btn btn-secondary" id="viewRiderStatsBtn">
+                                <i class="fas fa-chart-line"></i> View Performance
+                            </button>
+                        </div>
+                        
+                        <div class="report-card">
+                            <h3>Missing Parcels</h3>
+                            <button class="btn btn-secondary" id="viewMissingParcelsBtn">
+                                <i class="fas fa-exclamation-triangle"></i> View Missing
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="reportResult" class="report-result"></div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    
+    <div id="modalContainer"></div>
+
+    
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

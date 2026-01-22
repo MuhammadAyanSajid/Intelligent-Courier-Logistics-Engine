@@ -1,43 +1,31 @@
-# Prerequisites
-*.d
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# Environment variables
+.env
+.env.local
 
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-
-*.out
-*.app
-
-# VS Code
+# IDE
 .vscode/
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-*.code-workspace
+.idea/
+*.swp
+*.swo
+*~
 
-# OS generated
+# OS
 .DS_Store
 Thumbs.db
+
+# Build outputs
+dist/
+build/
+*.exe
+*.obj
+*.o
+
+# Logs
+logs/
+*.log
