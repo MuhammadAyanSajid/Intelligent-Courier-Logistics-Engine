@@ -25,6 +25,10 @@ build/
 *.exe
 *.obj
 *.o
+*.pdb
+*.ilk
+*.d
+
 
 # Logs
 logs/
