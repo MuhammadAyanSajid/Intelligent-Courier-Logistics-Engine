@@ -1,6 +1,20 @@
-# SwiftEx Courier System
+# 📦 Intelligent Courier Logistics Engine (SwiftEx)
 
-SwiftEx is a comprehensive logistics and courier management system designed to handle parcel tracking, routing, and delivery operations. This project features a dual-interface approach, offering both a high-performance C++ Console Engine and a modern Web Application.
+> **A comprehensive, production-ready courier logistics management system with intelligent routing, real-time tracking, and dual-interface architecture.**
+
+SwiftEx is an advanced logistics and courier management platform designed to handle end-to-end parcel operations including intelligent routing, real-time tracking, and delivery optimization. Built with a dual-interface approach, it combines a high-performance C++ Console Engine for backend operations with a modern, responsive Web Application for user-friendly management.
+
+## 🌟 Overview
+
+This project demonstrates the practical application of **Data Structures & Algorithms (DSA)** in solving real-world logistics challenges. It implements custom data structures from scratch, employs graph algorithms for route optimization, and provides a complete courier management solution suitable for educational purposes and small-to-medium scale deployment.
+
+### Key Highlights
+- **🎯 Intelligent Routing:** Dijkstra's algorithm for shortest path calculations with dynamic route adjustments
+- **📊 Custom Data Structures:** Implementation of Vector, LinkedList, Stack, Queue, MinHeap, Graph, and HashTable from scratch
+- **🔄 Real-time Processing:** Queue-based parcel processing through multiple stages (Pickup → Warehouse → Transit → Delivered)
+- **👥 Multi-user Support:** Admin authentication and role-based access control
+- **📱 Dual Interface:** Choose between high-performance console or user-friendly web interface
+- **💾 Persistent Storage:** CSV and JSON-based data persistence
 
 ## 🚀 Features
 
