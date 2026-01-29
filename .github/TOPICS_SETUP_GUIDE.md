@@ -18,30 +18,32 @@ To complete the repository setup, you need to add topics through GitHub's web in
 
 2. **Click the gear icon (⚙️)** next to "About" in the right sidebar
 
-3. **Add topics** in the "Topics" field. Copy and paste these recommended topics:
+3. **Add topics** in the "Topics" field. Here are the top 20 recommended topics (GitHub's maximum):
 
    ```
    courier-management
    logistics
    routing
    tracking-system
+   delivery-management
    data-structures
    algorithms
    dijkstra-algorithm
-   cpp
-   cplusplus
-   nodejs
-   express
    graph-algorithms
-   delivery-management
    queue
    heap
-   educational-project
    dsa
+   cpp
+   nodejs
+   express
    web-application
    console-application
    fleet-management
+   educational-project
+   rest-api
    ```
+   
+   **Note:** If you want to include both `cpp` and `cplusplus`, remove one of the optional topics like `rest-api` or `educational-project`.
 
 4. **Optionally update the description** in the same dialog box with:
    ```
@@ -59,9 +61,8 @@ To complete the repository setup, you need to add topics through GitHub's web in
 - tracking-system
 - delivery-management
 
-**Technology Stack** (6):
-- cpp
-- cplusplus
+**Technology Stack** (5):
+- cpp (or cplusplus - pick one based on preference)
 - nodejs
 - express
 - web-application
@@ -75,20 +76,15 @@ To complete the repository setup, you need to add topics through GitHub's web in
 - queue
 - heap
 
-**Additional Topics** (5):
+**Additional Topics** (4):
 - dsa
 - fleet-management
 - educational-project
 - rest-api
-- dashboard
 
-**Total: 22 topics** (GitHub allows up to 20, so select the most relevant ones for your use case)
+**Total: 20 topics** (GitHub's maximum)
 
-**Recommended Priority** (if you need to stay within 20):
-- Include all "Core Domain" topics (5)
-- Include all "Algorithms & Data Structures" topics (6)
-- Choose between `cpp` or `cplusplus` (pick one)
-- Select 8-9 from "Technology Stack" and "Additional Topics" based on what you want to emphasize
+The list above provides a balanced selection across all categories. The recommended topics in the code block above reflect this 20-topic selection.
 
 ## What Was Changed:
 
