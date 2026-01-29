@@ -1,7 +1,7 @@
 {
   "name": "swiftex-courier-system",
   "version": "1.0.0",
-  "description": "SwiftEx Courier Management System - Web Application",
+  "description": "Intelligent Courier Logistics Engine - A comprehensive courier management system with intelligent routing, real-time tracking, and advanced data structures. Features a dual-interface architecture with C++ console engine and modern web application.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -11,7 +11,23 @@
     "courier",
     "logistics",
     "routing",
-    "management"
+    "management",
+    "tracking-system",
+    "delivery-management",
+    "fleet-management",
+    "dijkstra-algorithm",
+    "graph-algorithms",
+    "data-structures",
+    "queue",
+    "heap",
+    "courier-management",
+    "parcel-tracking",
+    "intelligent-routing",
+    "express",
+    "nodejs",
+    "rest-api",
+    "dashboard",
+    "admin-panel"
   ],
   "author": "",
   "license": "ISC",
