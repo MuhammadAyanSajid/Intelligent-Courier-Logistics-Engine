@@ -59,8 +59,9 @@ To complete the repository setup, you need to add topics through GitHub's web in
 - tracking-system
 - delivery-management
 
-**Technology Stack** (5):
-- cpp / cplusplus
+**Technology Stack** (6):
+- cpp
+- cplusplus
 - nodejs
 - express
 - web-application
@@ -81,7 +82,13 @@ To complete the repository setup, you need to add topics through GitHub's web in
 - rest-api
 - dashboard
 
-**Total: Up to 21 topics** (GitHub allows up to 20, so you may need to select the most relevant ones)
+**Total: 22 topics** (GitHub allows up to 20, so select the most relevant ones for your use case)
+
+**Recommended Priority** (if you need to stay within 20):
+- Include all "Core Domain" topics (5)
+- Include all "Algorithms & Data Structures" topics (6)
+- Choose between `cpp` or `cplusplus` (pick one)
+- Select 8-9 from "Technology Stack" and "Additional Topics" based on what you want to emphasize
 
 ## What Was Changed:
 
