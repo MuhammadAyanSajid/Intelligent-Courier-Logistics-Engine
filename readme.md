@@ -1,10 +1,10 @@
-# 📦 Intelligent Courier Logistics Engine (SwiftEx)
+# Intelligent Courier Logistics Engine (SwiftEx)
 
 > **A comprehensive, production-ready courier logistics management system with intelligent routing, real-time tracking, and dual-interface architecture.**
 
 SwiftEx is an advanced logistics and courier management platform designed to handle end-to-end parcel operations including intelligent routing, real-time tracking, and delivery optimization. Built with a dual-interface approach, it combines a high-performance C++ Console Engine for backend operations with a modern, responsive Web Application for user-friendly management.
 
-## 🌟 Overview
+## Overview
 
 This project demonstrates the practical application of **Data Structures & Algorithms (DSA)** in solving real-world logistics challenges. It implements custom data structures from scratch, employs graph algorithms for route optimization, and provides a complete courier management solution suitable for educational purposes and small-to-medium scale deployment.
 
@@ -16,7 +16,7 @@ This project demonstrates the practical application of **Data Structures & Algor
 - **📱 Dual Interface:** Choose between high-performance console or user-friendly web interface
 - **💾 Persistent Storage:** CSV and JSON-based data persistence
 
-## 🚀 Features
+## Features
 
 ### Core Capabilities
 *   **Parcels Management:** Add, withdraw, track, and categorize parcels (by weight, destination, priority).
@@ -50,7 +50,7 @@ A user-friendly browser-based dashboard.
 *   **Frontend:** HTML5, CSS3, JavaScript (ES6+)
 *   **Data Storage:** CSV (Console App) & JSON (Web App)
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 ├── CourierSystem.cpp/h   # C++ Core Logic (System Controller)
@@ -66,14 +66,14 @@ A user-friendly browser-based dashboard.
 └── start.sh              # Script to start Node.js server (Linux/Mac)
 ```
 
-## ⚡ Getting Started
+## Getting Started
 
 ### Prerequisites
 
 *   **C++ Compiler:** G++ (MinGW), Clang, or MSVC.
 *   **Node.js & npm:** For running the web dashboard.
 
-### 🖥️ Running the C++ Console App
+### Running the C++ Console App
 
 1.  **Compile the code**:
     Run the provided batch script:
@@ -92,7 +92,7 @@ A user-friendly browser-based dashboard.
 3.  **Login**:
     *   Default credentials may need to be initialized or checked in `admins.txt` (if generated) or the source code.
 
-### 🌐 Running the Web Application
+### Running the Web Application
 
 1.  **Install Dependencies**:
     ```bash
@@ -112,7 +112,7 @@ A user-friendly browser-based dashboard.
         *   Username: `admin`
         *   Password: `admin123`
 
-## 📝 Notes
+## Notes
 
 *   The C++ application and Web application currently maintain separate data stores (CSV vs JSON). Changes in one may not reflect in the other immediately unless synchronized manually or through future integration updates.
 *   Ensure the `data/` directory exists for the Web App to function correctly.
